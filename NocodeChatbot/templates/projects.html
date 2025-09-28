@@ -1,5 +1,77 @@
 {% extends "base.html" %} {% block title %} Manage Projects{% endblock %}
 {% block body %}
 
+<div class="container-fluid px-0">
+     <!-- New Project Button -->
+    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newProjectModal">
+        + Create Project
+    </button>
 
+    <!-- New Project Modal -->
+    <div class="modal fade" id="newProjectModal" tabindex="-1" aria-labelledby="newProjectModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newProjectModalLabel">Create New Project</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="projectName" class="form-label">Project Name</label>
+                        <input type="text" class="form-control" id="projectName" placeholder="Enter project name">
+                    </div>
+                    <div class="mb-3">
+                        <label for="projectDetails" class="form-label">Project Details</label>
+                        <textarea class="form-control" id="projectDetails" rows="4" placeholder="Enter project details"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success" onclick="saveProject()">Save Project</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div>
+    </div>
+</div>
+<script>
+function saveProject() {
+    var projectName = $("#projectName").val();
+    var projectDetails = $("#projectDetails").val();
+
+    if (!projectName) {
+        nocodealert("Please enter project name.", 'warning', 1500);
+        return;
+    }
+    if (!projectDetails) {
+        nocodealert("Please enter project details.", 'warning', 1500);
+        return;
+    }
+
+    $.ajax({
+        url: "/projects/save_project",
+        type: "POST",
+        data: {
+            project_name: projectName,
+            project_details: projectDetails
+        },
+        success: function(response) {
+            try {
+            var data = JSON.parse(response);
+            if (data["error_code"] === 0) {
+                nocodealert(data["msg"], 'success', 2000); 
+                $("#newProjectModal").modal('hide');
+                $("#projectName").val('');
+                $("#projectDetails").val('');
+            } else {
+                nocodealert("Error: " + data["msg"], 'error', 2000);
+            }
+            } catch {
+            }
+        },
+        error: function(xhr) {
+            nocodealert("Unexpected error occurred.", 'error', 2000);  
+        }
+    });
+}
+</script>
 {%endblock%}
