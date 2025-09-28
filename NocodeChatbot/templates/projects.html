@@ -3,9 +3,13 @@
 
 <div class="container-fluid px-0">
      <!-- New Project Button -->
-    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newProjectModal">
+    <button type="button" class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#newProjectModal">
         + Create Project
     </button>
+
+    <div class="row" id="projectsContainer">
+    
+    </div>
 
     <!-- New Project Modal -->
     <div class="modal fade" id="newProjectModal" tabindex="-1" aria-labelledby="newProjectModalLabel" aria-hidden="true">
@@ -33,7 +37,51 @@
         </div>
     </div>
 </div>
+ <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
+$(document).ready(function() {
+    loadprojects();
+});
+function loadprojects() {
+    $.ajax({
+        url: "/projects/loadprojects",
+        type: "GET",
+        success: function(data) {
+            try {  
+                if (data.error_code === 0) {
+                    var projects = data.projects;
+                    var projectListHtml = '';
+                    for (var i = 0; i < projects.length; i++) {
+                        var project = projects[i];
+                        projectListHtml += `
+                            <div class="col-xxl-4">
+                                <div class="card border card-border-success mb-3">
+                                    <div class="card-header">
+                                        <h6 class="card-title mb-0">${project.project_name} <span class="badge bg-success align-middle fs-10">${project.status}</span></h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text">${project.project_details}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    $("#projectsContainer").html(projectListHtml);
+
+                } else {
+                    nocodealert("Error loading projects: " + data.msg, 'error', 2000);
+                }
+            } catch{
+
+            }
+        },
+        error: function(xhr) {
+            nocodealert("Unexpected error occurred.", 'error', 2000);
+        }
+    });
+}
+
 function saveProject() {
     var projectName = $("#projectName").val();
     var projectDetails = $("#projectDetails").val();
