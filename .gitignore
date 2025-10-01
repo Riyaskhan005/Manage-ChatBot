@@ -1,2 +1,7 @@
 NocodeChatbot/utils/__pycache__/common.cpython-310.pyc
 NocodeChatbot/manageprojects/__pycache__/routes.cpython-310.pyc
+NocodeChatbot/utils/__pycache__/logwritter.cpython-310.pyc
+NocodeChatbot/authentication/__pycache__/routes.cpython-310.pyc
+NocodeChatbot/authentication/__pycache__/__init__.cpython-310.pyc
+NocodeChatbot/manageprojects/__pycache__/routes.cpython-310.pyc
+NocodeChatbot/__pycache__/__init__.cpython-310.pyc
