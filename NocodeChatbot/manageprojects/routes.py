@@ -47,7 +47,7 @@ def save_project():
         project_details = request.form.get("project_details")
 
         project = Projects(
-            customer_id="123",
+            customer_id="1",
             project_name=project_name,
             project_details=project_details,
             created_by="m.driyaskhan55@gmail.com",
@@ -65,4 +65,69 @@ def save_project():
         db.session.rollback()
         return_msg["error_code"] = 1
         return_msg["msg"] = f"Error saving project: {str(e)}"
+        return json.dumps(return_msg), 500
+    
+
+@bp.route("/update_project", methods=["POST"])
+def update_project():
+    return_msg = {}
+    try:
+        project_id = request.form.get("id")
+        project_name = request.form.get("project_name")
+        project_details = request.form.get("project_details")
+
+        if not project_id:
+            return_msg["error_code"] = 1
+            return_msg["msg"] = "Project ID is required"
+            return json.dumps(return_msg), 400
+
+        updated_rows = Projects.query.filter_by(id=project_id).update({
+            "project_name": project_name,
+            "project_details": project_details
+        })
+
+        if not updated_rows:
+            return_msg["error_code"] = 1
+            return_msg["msg"] = "Project not found"
+            return json.dumps(return_msg), 404
+
+        db.session.commit()
+
+        return_msg["error_code"] = 0
+        return_msg["msg"] = "Project updated successfully"
+        return json.dumps(return_msg)
+
+    except Exception as e:
+        db.session.rollback()
+        return_msg["error_code"] = 1
+        return_msg["msg"] = f"Error updating project: {str(e)}"
+        return json.dumps(return_msg), 500
+    
+@bp.route("/delete_project", methods=["POST"])
+def delete_project():
+    return_msg = {}
+    try:
+        project_id = request.form.get("id")
+        if not project_id:
+            return_msg["error_code"] = 1
+            return_msg["msg"] = "Project ID is required"
+            return json.dumps(return_msg), 400
+
+        project = Projects.query.get(project_id)
+        if not project:
+            return_msg["error_code"] = 1
+            return_msg["msg"] = "Project not found"
+            return json.dumps(return_msg), 404
+
+        db.session.delete(project)
+        db.session.commit()
+
+        return_msg["error_code"] = 0
+        return_msg["msg"] = "Project deleted successfully"
+        return json.dumps(return_msg)
+
+    except Exception as e:
+        db.session.rollback()
+        return_msg["error_code"] = 1
+        return_msg["msg"] = f"Error deleting project: {str(e)}"
         return json.dumps(return_msg), 500

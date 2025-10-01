@@ -17,7 +17,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="newProjectModalLabel">Create New Project</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" onclick="closeModal()" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
@@ -30,8 +30,9 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-success" onclick="saveProject()">Save Project</button>
+                    <button type="button" class="btn btn-light" onclick="closeModal()">Close</button>
+                    <button type="button" class="btn btn-success" id="saveProjectBtn" onclick="saveProject()">Save</button>
+                    <button type="button" class="btn btn-success" id="updateProjectBtn" onclick="updateProject()" style="display: none;">Update</button>
                 </div>
             </div><!-- /.modal-content -->
         </div>
@@ -47,20 +48,63 @@ function loadprojects() {
         url: "/projects/loadprojects",
         type: "GET",
         success: function(data) {
-            try {  
+            try {
                 if (data.error_code === 0) {
                     var projects = data.projects;
                     var projectListHtml = '';
                     for (var i = 0; i < projects.length; i++) {
                         var project = projects[i];
-                        projectListHtml += `
-                            <div class="col-xxl-4">
-                                <div class="card border card-border-success mb-3">
-                                    <div class="card-header">
-                                        <h6 class="card-title mb-0">${project.project_name} <span class="badge bg-success align-middle fs-10">${project.status}</span></h6>
+                        var ago = "";
+                        if (!project.created_on) {
+                            ago = "Not Found";
+                        } else {
+                            var diff = Date.now() - new Date(project.created_on).getTime();
+                            var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                            ago = days < 1 ? "Today" :
+                                days === 1 ? "1 day ago" :
+                                days < 30 ? days + " days ago" :
+                                days < 365 ? Math.floor(days / 30) + " months ago" :
+                                Math.floor(days / 365) + " years ago";
+                        }
+
+                         projectListHtml += `
+                            <div class="col-xl-4">
+                                <div class="card border rounded-3">
+                                    
+                                    <div class="card-header d-flex justify-content-between align-items-center bg-dark text-white">
+                                        <h6 class="mb-0">${project.project_name}</h6>
+                                        <div class="dropdown">
+                                            <a href="#" class="text-white" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="ri-more-2-fill"></i>
+                                            </a>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><a class="dropdown-item" Onclick="editProject(${project.id}, '${project.project_name}', '${project.project_details}')">Edit</a></li>
+                                                <li><a class="dropdown-item" Onclick="deleteProject(${project.id})">Delete</a></li>
+                                            </ul>
+                                        </div>
                                     </div>
                                     <div class="card-body">
-                                        <p class="card-text">${project.project_details}</p>
+                                        <div class="row">
+
+                                            <div class="col-6">
+                                                <p class="mb-1 text-muted">Status</p>
+                                                <span class="badge bg-success">${project.status}</span>
+                                                
+                                                <p class="mt-3 mb-1 text-muted">
+                                                    <i class="ri-time-line"></i> ${ago}
+                                                </p>
+                                            </div>
+                                            <div class="col-6">
+                                                <p class="mb-1 text-muted">Created By</p>
+                                                <p class="mb-2">${project.created_by}</p>
+                                            </div>
+                                        </div>
+                                        <hr class="my-3">
+                                        <div>
+                                            <p class="fs-25 lh-base">
+                                                ${project.project_details}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -72,8 +116,8 @@ function loadprojects() {
                 } else {
                     nocodealert("Error loading projects: " + data.msg, 'error', 2000);
                 }
-            } catch{
-
+            } catch {
+                nocodealert("Unexpected error occurred.", 'error', 2000);
             }
         },
         error: function(xhr) {
@@ -81,7 +125,15 @@ function loadprojects() {
         }
     });
 }
-
+function closeModal() {
+    $('#projectName').val('');
+    $('#projectDetails').val('');
+    $("#saveProjectBtn").show();
+    $("#updateProjectBtn").hide();
+    $("#newProjectModalLabel").text("Create New Project");
+    $('#newProjectModal').modal('hide');
+    curentProjectId = null
+}
 function saveProject() {
     var projectName = $("#projectName").val();
     var projectDetails = $("#projectDetails").val();
@@ -106,10 +158,9 @@ function saveProject() {
             try {
             var data = JSON.parse(response);
             if (data["error_code"] === 0) {
-                nocodealert(data["msg"], 'success', 2000); 
-                $("#newProjectModal").modal('hide');
-                $("#projectName").val('');
-                $("#projectDetails").val('');
+                nocodealert(data["msg"], 'success', 2000);
+                closeModal();
+                loadprojects();
             } else {
                 nocodealert("Error: " + data["msg"], 'error', 2000);
             }
@@ -118,6 +169,94 @@ function saveProject() {
         },
         error: function(xhr) {
             nocodealert("Unexpected error occurred.", 'error', 2000);  
+        }
+    });
+}
+let curentProjectId = null;
+function editProject(id, name, details) {
+    currentProjectId = id;
+    $("#projectName").val(name);
+    $("#projectDetails").val(details);
+
+    $("#saveProjectBtn").hide();
+    $("#updateProjectBtn").show();
+
+    $("#newProjectModalLabel").text("Edit Project");
+    $("#newProjectModal").modal("show");
+}
+function updateProject() {
+    if (!currentProjectId) {
+        nocodealert("Project ID not found.", 'error', 1500);
+        return;
+    }
+
+    var projectName = $("#projectName").val();
+    var projectDetails = $("#projectDetails").val();
+
+    if (!projectName) {
+        nocodealert("Please enter project name.", 'warning', 1500);
+        return;
+    }
+    if (!projectDetails) {
+        nocodealert("Please enter project details.", 'warning', 1500);
+        return;
+    }
+
+    $.ajax({
+        url: "/projects/update_project",
+        type: "POST",
+        data: {
+            id: currentProjectId,
+            project_name: projectName,
+            project_details: projectDetails
+        },
+        success: function(response) {
+            try {
+                var data = JSON.parse(response);
+                if (data.error_code === 0) {
+                    nocodealert(data.msg, 'success', 2000);
+                    closeModal();
+                    loadprojects();
+                } else {
+                    nocodealert("Error: " + data.msg, 'error', 2000);
+                }
+            } catch {
+                nocodealert("Unexpected error occurred.", 'error', 2000);
+            }
+        },
+        error: function() {
+            nocodealert("Unexpected error occurred.", 'error', 2000);
+        }
+    });
+}
+
+function deleteProject(id) {
+    nocodeConfirm(
+        "Do you really want to delete this project?",
+        "Delete",
+        "Cancel"
+    ).then((confirmed) => {
+        if (confirmed) {
+            $.ajax({
+                url: "/projects/delete_project",
+                type: "POST",
+                data: { id: id },
+                success: function(response) {
+                    try {
+                        var data = JSON.parse(response);
+                        if (data.error_code === 0) {
+                            nocodealert(data.msg, 'success', 2000);
+                            loadprojects();
+                        } else {
+                            nocodealert("Error: " + data.msg, 'error', 2000);
+                        }
+                    } catch {
+                    }
+                },
+                error: function() {
+                    nocodealert("Unexpected error occurred.", 'error', 2000);
+                }
+            });
         }
     });
 }
