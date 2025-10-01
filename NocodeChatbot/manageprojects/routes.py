@@ -48,9 +48,11 @@ def save_project():
         project_name = request.form.get("project_name")
         project_details = request.form.get("project_details")
         customer_id = session.get('CustomerId')
-        if not customer_id:
+        customer_email = session.get('email')
+        
+        if not customer_id or not customer_email:
             return_msg["error_code"] = 1
-            return_msg["msg"] = "User not logged in"
+            return_msg["msg"] = "Customer not logged in"
             return json.dumps(return_msg) 
 
         existing_project = Projects.query.filter_by(
@@ -67,7 +69,7 @@ def save_project():
             customer_id=customer_id,
             project_name=project_name,
             project_details=project_details,
-            created_by="m.driyaskhan55@gmail.com",
+            created_by=customer_email,
             created_on=get_utc_now(),
             status="Active"
         )

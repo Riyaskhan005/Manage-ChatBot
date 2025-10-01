@@ -1,22 +1,12 @@
 {% extends "base.html" %} {% block title %} Manage Models{% endblock %}
 {% block body %}
-<style>
-/* Make the select box transparent */
-
-
-/* Remove focus background for options in some browsers */
-#project option {
-    background-color: transparent;   /* option background */
-   
-}
-</style>
 <div class="container-fluid px-0">
     <div class="card p-4">
         <div class="row align-items-center g-3 px-3">
             <!-- Dropdown (Left Side) -->
             <div class="col-12 col-md-6">
                 <label for="project" class="form-label">Choose Project</label>
-                <select class="form-select" id="project">
+                <select class="form-select" id="project" onchange="onchangeProject()">
                     <option value="" selected>Choose Project</option>
                 </select>
             </div>
@@ -28,8 +18,58 @@
         </div>
     </div>
 </div>
+
+<!-- Create Model Button (Hidden Initially) -->
+ <div class="row mb-3" id="modelBtnContainer" style="display:none;">
+        <div class="col-12">
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createModelModal">
+                + Create Model
+            </button>
+        </div>
+    </div>
+
+    <div class="row" id="modelsContainer"></div>
+</div>
+
+<!-- Create Model Modal -->
+<div class="modal fade" id="createModelModal" tabindex="-1" aria-labelledby="createModelModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createModelModalLabel">Create New Model</h5>
+                <button type="button" class="btn-close" onclick="closeModel()" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="modelConfig" class="form-label">Model Config</label>
+                    <select class="form-select" id="modelConfig">
+                        <option value="" selected>Choose Config</option>
+                        <option value="Open AI">Open AI</option>
+                        <option value="Gemmini">Gemmini</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="modelName" class="form-label">Model Name</label>
+                    <input type="text" class="form-control" id="modelName" placeholder="Enter model name">
+                </div>
+                <div class="mb-3">
+                    <label for="modelKey" class="form-label">Model Key</label>
+                    <input type="text" class="form-control" id="modelKey" placeholder="Enter model key">
+                </div>
+                <div class="mb-3">
+                    <label for="modelVersion" class="form-label">Model Version</label>
+                    <input type="text" class="form-control" id="modelVersion" placeholder="Enter model version">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" onclick="closeModel()">Close</button>
+                <button type="button" class="btn btn-success" onclick="saveModel()">Save Model</button>
+            </div>
+        </div>
+    </div>
+</div>
 <script>
-    $("#page-title").text("Manage Models");
+$("#page-title").text("Manage Models");
 $(document).ready(function () {
     getProjects();
 });
@@ -59,14 +99,165 @@ function getProjects() {
         }
     });
 }
+function loadModels(projectId) {
+    $.ajax({
+        url: "/models/load_models",
+        type: "GET",
+        data: { project_id: projectId },
+        success: function(data) {
+            if (data.error_code === 0) {
+                var html = "";
+                for (var i = 0; i < data.models.length; i++) {
+                    var model = data.models[i];
+                    var createdAgo = "Not Found";
+                    if (model.created_on) {
+                        var diff = Date.now() - new Date(model.created_on).getTime();
+                        var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                        if (days < 1) createdAgo = "Today";
+                        else if (days === 1) createdAgo = "1 day ago";
+                        else if (days < 30) createdAgo = days + " days ago";
+                        else if (days < 365) createdAgo = Math.floor(days / 30) + " months ago";
+                        else createdAgo = Math.floor(days / 365) + " years ago";
+                    }
 
+                    var statusBadge = model.status === "Active" 
+                        ? '<span class="badge bg-success">Active</span>' 
+                        : '<span class="badge bg-danger">Inactive</span>';
+
+                     var logo = "";
+                    if (model.config === "Open AI") {
+                        logo = '<img src="/static/images/openai-logo.png" alt="OpenAI" style="height:20px; margin-right:5px;">';
+                    } else if (model.config === "Gemmini") {
+                        logo = '<img src="/static/images/gemmini-logo.png" alt="Gemmini" style="height:20px; margin-right:5px;">';
+                    }
+
+                        html += `
+                    <div class="col-xl-4">
+                        <div class="card border rounded-3 mb-3">
+                            <!-- Header -->
+                            <div class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
+                                <div class="d-flex align-items-center">
+                                    ${logo}
+                                    <h5 class="mb-0">${model.model_name}</h5>
+                                </div>
+                                <div class="dropdown">
+                                    <a href="#" class="text-white" data-bs-toggle="dropdown">
+                                        <i class="ri-more-2-fill"></i>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item" onclick="editModel(${model.id}, '${model.model_name}', '${model.config}', '${model.model_key}', '${model.model_version}')">
+                                                <i class="ri-pencil-line me-2"></i>Edit
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" onclick="deleteModel(${model.id})">
+                                                <i class="ri-delete-bin-line me-2"></i>Delete
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Body -->
+                            <div class="card-body">
+                                <div class="row mb-2">
+                                    <div class="col-7">
+                                        <p class="mb-1 text-muted">Created By</p>
+                                        <p class="mb-2">${model.created_by}</p>
+                                    </div>
+                                    <div class="col-5 text-end">
+                                        ${statusBadge}
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-7">
+                                        <p class="mb-1 text-muted">Version</p>
+                                        <p class="mb-2">${model.model_version}</p>
+                                    </div>
+                                    <div class="col-5 text-end">
+                                    <p class="mt-2 text-muted"><i class="ri-time-line"></i> ${createdAgo}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                }
+                $("#modelsContainer").html(html);
+            } else {
+                nocodealert(data.msg, "error");
+            }
+        },
+        error: function() {
+            nocodealert("Failed to load models.", "error");
+        }
+    });
+}
+function closeModel() {
+    $('#modelConfig').val('');
+    $('#modelName').val('');
+    $('#modelKey').val('');
+    $('#modelVersion').val('');
+    $('#createModelModal').modal('hide');
+}
+function onchangeProject() {
+    $("#modelsContainer").empty();
+
+    $("#modelBtnContainer").hide();
+}
 function viewDetails() {
     var projectId = $("#project").val();
     if (!projectId) {
         nocodealert("Please select a project.", "warning");
         return;
     }
-    console.log("Selected Project ID:", projectId);
+    loadModels(projectId);
+    $("#modelBtnContainer").show();
+}
+function saveModel() {
+    var projectId = $("#project").val();
+    var config = $("#modelConfig").val();
+    var name = $("#modelName").val();
+    var key = $("#modelKey").val();
+    var version = $("#modelVersion").val();
+
+    if (!config) {
+        nocodealert("Please select a model config.", "warning");
+        return;
+    }
+    if (!name) {
+        nocodealert("Please enter model name.", "warning");
+        return;
+    }
+    if (!key) {
+        nocodealert("Please enter model key.", "warning");
+        return;
+    }
+
+    $.ajax({
+        url: "/models/save_model",
+        type: "POST",
+        data: {
+            project_id: projectId,
+            config: config,
+            name: name,
+            key: key,
+            version: version
+        },
+        success: function (response) {
+            var data = JSON.parse(response);
+            if (data.error_code === 0) {
+                nocodealert(data.msg, "success");
+                closeModel();
+            } else {
+                nocodealert(data.msg, "error");
+            }
+        },
+        error: function () {
+            nocodealert("Unexpected error occurred.", "error");
+        }
+    });
 }
 </script>
 {% endblock %}
