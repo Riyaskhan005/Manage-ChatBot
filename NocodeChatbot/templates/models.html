@@ -63,7 +63,8 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-light" onclick="closeModel()">Close</button>
-                <button type="button" class="btn btn-success" onclick="saveModel()">Save Model</button>
+                <button type="button" class="btn btn-success" id="saveModelBtn" onclick="saveModel()">Save Model</button>
+                <button type="button" class="btn btn-success" id="updateModelBtn" onclick="updateModel()">Update Model</button>
             </div>
         </div>
     </div>
@@ -199,6 +200,9 @@ function closeModel() {
     $('#modelName').val('');
     $('#modelKey').val('');
     $('#modelVersion').val('');
+    $("#saveModelBtn").show();
+    $("#updateModelBtn").hide();
+    $("#createModelModalLabel").text("Create New Model");
     $('#createModelModal').modal('hide');
 }
 function onchangeProject() {
@@ -250,6 +254,7 @@ function saveModel() {
             if (data.error_code === 0) {
                 nocodealert(data.msg, "success");
                 closeModel();
+                loadModels(projectId);
             } else {
                 nocodealert(data.msg, "error");
             }
@@ -259,5 +264,101 @@ function saveModel() {
         }
     });
 }
+
+let currentModelId = null;
+
+function editModel(id, name, config, key, version) {
+    currentModelId = id;
+
+    $("#modelConfig").val(config);
+    $("#modelName").val(name);
+    $("#modelKey").val(key);
+    $("#modelVersion").val(version);
+
+    $("#createModelModalLabel").text("Edit Model");
+    $("#saveModelBtn").hide();
+    $("#updateModelBtn").show();
+
+    $("#createModelModal").modal("show");
+}
+
+function updateModel() {
+    var config = $("#modelConfig").val();
+    var name = $("#modelName").val();
+    var key = $("#modelKey").val();
+    var version = $("#modelVersion").val();
+    var projectId = $("#project").val();
+
+    if (!config) {
+        nocodealert("Please select a model config.", "warning");
+        return;
+    }
+    if (!name) {
+        nocodealert("Please enter model name.", "warning");
+        return;
+    }
+    if (!key) {
+        nocodealert("Please enter model key.", "warning");
+        return;
+    }
+
+    $.ajax({
+        url: "/models/update_model",
+        type: "POST",
+        data: {
+            id: currentModelId,
+            config: config,
+            name: name,
+            key: key,
+            version: version
+        },
+        success: function(response) {
+            var data = JSON.parse(response);
+            if (data.error_code === 0) {
+                nocodealert(data.msg, "success");
+                $("#createModelModal").modal("hide");
+                closeModel();
+                loadModels(projectId);
+            } else {
+                nocodealert(data.msg, "error");
+            }
+        },
+        error: function() {
+            nocodealert("Unexpected error occurred.", "error");
+        }
+    });
+}
+
+function deleteModel(id) {
+    nocodeConfirm(
+        "Do you really want to delete this model?",
+        "Delete",
+        "Cancel"
+    ).then((confirmed) => {
+        if (confirmed) {
+            $.ajax({
+                url: "/models/delete_model",
+                type: "POST",
+                data: { id: id },
+                success: function(response) {
+                    var data = JSON.parse(response);
+                    if (data.error_code === 0) {
+                        nocodealert(data.msg, "success");
+                        var projectId = $("#project").val();
+                        if (projectId) {
+                            loadModels(projectId);
+                        }
+                    } else {
+                        nocodealert(data.msg, "error");
+                    }
+                },
+                error: function() {
+                    nocodealert("Unexpected error occurred.", "error");
+                }
+            });
+        }
+    });
+}
+
 </script>
 {% endblock %}

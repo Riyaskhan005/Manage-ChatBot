@@ -103,3 +103,76 @@ def save_model():
         return_msg["msg"] = f"Error saving model: {str(e)}"
         log_writer_.log_exception("managemodels", "save_model", e)
         return json.dumps(return_msg), 500
+
+@bp.route("/update_model", methods=["POST"])
+def update_model():
+    return_msg = {}
+    try:
+        model_id = request.form.get("id")
+        config = request.form.get("config")
+        name = request.form.get("name")
+        key = request.form.get("key")
+        version = request.form.get("version")
+        customer_id = session.get("CustomerId")
+
+        if not customer_id:
+            return_msg["error_code"] = 1
+            return_msg["msg"] = "Customer not logged in"
+            return json.dumps(return_msg)
+
+        updated_rows = ManageModels.query.filter_by(id=model_id, customer_id=customer_id).update({
+            "model_config": config,
+            "model_name": name,
+            "model_key": key,
+            "model_version": version
+        })
+
+        if not updated_rows:
+            return_msg["error_code"] = 2
+            return_msg["msg"] = "Model not found"
+            return json.dumps(return_msg)
+
+        db.session.commit()
+
+        return_msg["error_code"] = 0
+        return_msg["msg"] = "Model updated successfully"
+        return json.dumps(return_msg)
+
+    except Exception as e:
+        db.session.rollback()
+        log_writer_.log_exception("managemodels", "update_model", e)
+        return_msg["error_code"] = 1
+        return_msg["msg"] = f"Error updating model: {str(e)}"
+        return json.dumps(return_msg), 500
+
+@bp.route("/delete_model", methods=["POST"])
+def delete_model():
+    return_msg = {}
+    try:
+        model_id = request.form.get("id")
+        customer_id = session.get("CustomerId")
+
+        if not customer_id:
+            return_msg["error_code"] = 1
+            return_msg["msg"] = "Customer not logged in"
+            return json.dumps(return_msg)
+
+        model = ManageModels.query.filter_by(id=model_id, customer_id=customer_id).first()
+        if not model:
+            return_msg["error_code"] = 2
+            return_msg["msg"] = "Model not found"
+            return json.dumps(return_msg)
+
+        db.session.delete(model)
+        db.session.commit()
+
+        return_msg["error_code"] = 0
+        return_msg["msg"] = "Model deleted successfully"
+        return json.dumps(return_msg)
+
+    except Exception as e:
+        db.session.rollback()
+        log_writer_.log_exception("managemodels", "delete_model", e)
+        return_msg["error_code"] = 1
+        return_msg["msg"] = f"Error deleting model: {str(e)}"
+        return json.dumps(return_msg), 500
