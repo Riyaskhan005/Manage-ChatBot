@@ -1,12 +1,13 @@
+from asyncio.log import logger
 from flask import Flask, render_template,request,jsonify, session
 from NocodeChatbot.extensions import db
 from NocodeChatbot.manageprojects import bp
 from NocodeChatbot.models.projects import Projects
 import json
 from NocodeChatbot.utils.common import get_utc_now
-# from NocodeChatbot.utils.logwritter import LogWriter 
+from NocodeChatbot.utils.logwritter import LogWriter 
 # from NocodeChatbot.utils.login_requried import login_required
-# logger = LogWriter()
+log_writer_ = LogWriter()
 
 
 @bp.route('/')
@@ -45,9 +46,20 @@ def save_project():
     try:
         project_name = request.form.get("project_name")
         project_details = request.form.get("project_details")
+        customer_id ='1'  
+
+        existing_project = Projects.query.filter_by(
+            customer_id=customer_id,
+            project_name=project_name
+        ).first()
+
+        if existing_project:
+            return_msg["error_code"] = 2
+            return_msg["msg"] = "Project name already exists"
+            return json.dumps(return_msg)
 
         project = Projects(
-            customer_id="1",
+            customer_id=customer_id,
             project_name=project_name,
             project_details=project_details,
             created_by="m.driyaskhan55@gmail.com",
@@ -65,6 +77,7 @@ def save_project():
         db.session.rollback()
         return_msg["error_code"] = 1
         return_msg["msg"] = f"Error saving project: {str(e)}"
+        log_writer_.log_exception("manageprojects", "save_project", e)
         return json.dumps(return_msg), 500
     
 
@@ -79,7 +92,7 @@ def update_project():
         if not project_id:
             return_msg["error_code"] = 1
             return_msg["msg"] = "Project ID is required"
-            return json.dumps(return_msg), 400
+            return json.dumps(return_msg)
 
         updated_rows = Projects.query.filter_by(id=project_id).update({
             "project_name": project_name,
@@ -89,7 +102,7 @@ def update_project():
         if not updated_rows:
             return_msg["error_code"] = 1
             return_msg["msg"] = "Project not found"
-            return json.dumps(return_msg), 404
+            return json.dumps(return_msg)
 
         db.session.commit()
 
@@ -101,6 +114,7 @@ def update_project():
         db.session.rollback()
         return_msg["error_code"] = 1
         return_msg["msg"] = f"Error updating project: {str(e)}"
+        log_writer_.log_exception("manageprojects", "update_project", e)
         return json.dumps(return_msg), 500
     
 @bp.route("/delete_project", methods=["POST"])
@@ -111,13 +125,13 @@ def delete_project():
         if not project_id:
             return_msg["error_code"] = 1
             return_msg["msg"] = "Project ID is required"
-            return json.dumps(return_msg), 400
+            return json.dumps(return_msg)
 
         project = Projects.query.get(project_id)
         if not project:
             return_msg["error_code"] = 1
             return_msg["msg"] = "Project not found"
-            return json.dumps(return_msg), 404
+            return json.dumps(return_msg)
 
         db.session.delete(project)
         db.session.commit()
@@ -130,4 +144,5 @@ def delete_project():
         db.session.rollback()
         return_msg["error_code"] = 1
         return_msg["msg"] = f"Error deleting project: {str(e)}"
+        log_writer_.log_exception("manageprojects", "delete_project", e)
         return json.dumps(return_msg), 500

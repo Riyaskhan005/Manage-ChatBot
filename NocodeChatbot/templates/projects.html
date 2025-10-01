@@ -114,10 +114,9 @@ function loadprojects() {
                     $("#projectsContainer").html(projectListHtml);
 
                 } else {
-                    nocodealert("Error loading projects: " + data.msg, 'error', 2000);
+                    nocodealert(data.msg, 'error', 2000);
                 }
             } catch {
-                nocodealert("Unexpected error occurred.", 'error', 2000);
             }
         },
         error: function(xhr) {
@@ -157,12 +156,13 @@ function saveProject() {
         success: function(response) {
             try {
             var data = JSON.parse(response);
+            console.log(data);
             if (data["error_code"] === 0) {
                 nocodealert(data["msg"], 'success', 2000);
                 closeModal();
                 loadprojects();
             } else {
-                nocodealert("Error: " + data["msg"], 'error', 2000);
+                nocodealert(data["msg"], 'error', 2000);
             }
             } catch {
             }
@@ -218,7 +218,7 @@ function updateProject() {
                     closeModal();
                     loadprojects();
                 } else {
-                    nocodealert("Error: " + data.msg, 'error', 2000);
+                    nocodealert(data.msg, 'error', 2000);
                 }
             } catch {
                 nocodealert("Unexpected error occurred.", 'error', 2000);
@@ -248,7 +248,7 @@ function deleteProject(id) {
                             nocodealert(data.msg, 'success', 2000);
                             loadprojects();
                         } else {
-                            nocodealert("Error: " + data.msg, 'error', 2000);
+                            nocodealert(data.msg, 'error', 2000);
                         }
                     } catch {
                     }
