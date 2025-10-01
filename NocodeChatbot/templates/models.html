@@ -1,0 +1,71 @@
+{% extends "base.html" %} {% block title %} Manage Models{% endblock %}
+{% block body %}
+<style>
+/* Make the select box transparent */
+
+
+/* Remove focus background for options in some browsers */
+#project option {
+    background-color: transparent;   /* option background */
+   
+}
+</style>
+<div class="container-fluid px-0">
+    <div class="card p-4">
+        <div class="row align-items-center g-3 px-3">
+            <!-- Dropdown (Left Side) -->
+            <div class="col-12 col-md-6">
+                <label for="project" class="form-label">Choose Project</label>
+                <select class="form-select" id="project">
+                    <option value="" selected>Choose Project</option>
+                </select>
+            </div>
+
+            <!-- Button (Right Side) -->
+            <div class="col-12 col-md-6">
+                <button class="btn btn-primary mt-4" onclick="viewDetails()">View Details</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+$(document).ready(function () {
+    getProjects();
+});
+
+function getProjects() {
+    $.ajax({
+        url: "/common/getprojects",
+        type: "GET",
+        success: function (data) {
+            if (data.error_code === 0) {
+                var $dropdown = $("#project");
+                $dropdown.empty();
+                $dropdown.append('<option value="" selected>Choose Project</option>');
+
+                for (var i = 0; i < data.projects.length; i++) {
+                    var project = data.projects[i];
+                    $dropdown.append(
+                        `<option value="${project.id}">${project.name}</option>`
+                    );
+                }
+            } else {
+                nocodealert(data.msg, "error");
+            }
+        },
+        error: function () {
+            nocodealert("Failed to load projects.", "error");
+        }
+    });
+}
+
+function viewDetails() {
+    var projectId = $("#project").val();
+    if (!projectId) {
+        nocodealert("Please select a project.", "warning");
+        return;
+    }
+    console.log("Selected Project ID:", projectId);
+}
+</script>
+{% endblock %}

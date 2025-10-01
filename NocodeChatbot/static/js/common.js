@@ -20,3 +20,25 @@ function nocodeConfirm(message = "Are you sure?", confirmText = "Yes", cancelTex
         position: 'top-end'
     }).then((result) => result.isConfirmed);
 }
+
+function nocodeCenterAlert(msg, type = 'success', timer = 2000, callback = null) {
+    const contentHtml = `
+        <div style="font-size:16px; font-weight:600; line-height:1.2; text-align:center;">
+            ${msg}
+        </div>
+        <div style="margin-top:8px; font-size:14px; color:#6c757d; text-align:center;">
+            Please wait...
+        </div>
+    `;
+
+    Swal.fire({
+        html: contentHtml,
+        icon: type,
+        timer: timer,
+        showConfirmButton: false,
+        timerProgressBar: true,
+        position: 'center'
+    }).then(() => {
+        if (callback) callback();
+    });
+}

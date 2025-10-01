@@ -69,17 +69,17 @@
             success: function(response) {
                 var data = JSON.parse(response);
                 if (data["error_code"] === 0) {
-                    nocodealert(data["msg"], 'success', 1500);
+                    nocodeCenterAlert(data["msg"], 'success', 1500, function () {
+                        if (remember) {
+                            setCookie("login_email", email, 30);
+                            setCookie("login_password", password, 30);
+                        } else {
+                            deleteCookie("login_email");
+                            deleteCookie("login_password");
+                        }
 
-                    if (remember) {
-                        setCookie("login_email", email, 30);
-                        setCookie("login_password", password, 30);
-                    } else {
-                        deleteCookie("login_email");
-                        deleteCookie("login_password");
-                    }
-                    
-                    window.location.href = "/home";
+                        window.location.href = "/home";
+                    });
                 } else {
                     nocodealert(data["msg"], 'error', 1500);
                 }
