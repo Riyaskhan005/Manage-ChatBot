@@ -18,12 +18,12 @@ def index():
 @bp.route('/loadprojects', methods=['GET'])
 def load_projects():
     try:
-        # customer_id = session.get("customerId")
-        # if not customer_id:
-        #     return jsonify({"error_code": 1, "msg": "Customer not logged in"}), 401
+        customer_id = session.get("CustomerId")
+        if not customer_id:
+            return jsonify({"error_code": 1, "msg": "Customer not logged in"})
 
         # Query projects only for this customer
-        projects = Projects.query.filter_by(customer_id=1).all()
+        projects = Projects.query.filter_by(customer_id=customer_id).all()
         projects_list = [
             {
                 "id": project.id,
@@ -38,6 +38,7 @@ def load_projects():
         ]
         return jsonify({"error_code": 0, "projects": projects_list})
     except Exception as e:
+        log_writer_.log_exception("manageprojects", "load_projects", e)
         return jsonify({"error_code": 1, "msg": f"Error loading projects: {str(e)}"}), 500
     
 @bp.route("/save_project", methods=["POST"])
@@ -46,7 +47,11 @@ def save_project():
     try:
         project_name = request.form.get("project_name")
         project_details = request.form.get("project_details")
-        customer_id ='1'  
+        customer_id = session.get('CustomerId')
+        if not customer_id:
+            return_msg["error_code"] = 1
+            return_msg["msg"] = "User not logged in"
+            return json.dumps(return_msg) 
 
         existing_project = Projects.query.filter_by(
             customer_id=customer_id,
