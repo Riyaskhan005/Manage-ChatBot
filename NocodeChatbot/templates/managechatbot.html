@@ -6,7 +6,7 @@
             <!-- Dropdown (Left Side) -->
             <div class="col-12 col-md-6">
                 <label for="project" class="form-label">Choose Project</label>
-                <select class="form-select" id="project">
+                <select class="form-select" id="project" onchange="onChangeProjects()">
                     <option value="" selected >Choose Project</option>
                 </select>
             </div>
@@ -17,11 +17,101 @@
             </div>
         </div>
     </div>
+    <div class="card mt-4" id="chatbotTableCard" style="display: none;">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Chatbots</h5>
+        <button class="btn btn-success" id="btnCreateChatbot" onclick="openCreateModal()">
+            <i class="ri-add-line"></i> Create New Chatbot
+        </button>
+    </div>
+    <div class="card-body">
+        <table id="chatbotTable" class="table table-bordered align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Chatbot Name</th>
+                    <th>Domain</th>
+                    <th>Model</th>
+                    <th>Color</th>
+                    <th>Status</th>
+                    <th>Created On</th>
+                    <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal fade" id="createChatbotModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Create Chatbot</h5>
+                <button type="button" class="btn-close" onclick="closeModal()"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+                        <label class="form-label">Chatbot Name</label>
+                        <input type="text" class="form-control" id="chatbot_name">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Chatbot Model</label>
+                        <select class="form-select" id="chatbot_model">
+                            <option value="">Select Model</option>
+                            <option value="gpt-4">GPT-4</option>
+                            <option value="gpt-3.5">GPT-3.5</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Chatbot Domain</label>
+                        <select class="form-select" id="chatbot_domain">
+                            <option value="">Select Domain</option>
+                            <option value="education">Education</option>
+                            <option value="health">Health</option>
+                            <option value="ecommerce">E-Commerce</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Chatbot Color</label>
+                        <div class="d-flex gap-2 align-items-center">
+                            <input type="color" class="form-control form-control-color"id="chatbot_color_code" value="#4b38b3">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-light" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" id="btnSaveChatbot" onclick="saveChatbot()">Save</button>
+                <button class="btn btn-primary" id="btnUpdateChatbot"onclick="updateChatbot()" style="display: none;">Update</button>
+            </div>
+
+        </div>
+    </div>
 </div>
+</div>
+
 <script>
-    $("#page-title").text("Manage ChatBot");
-    $(document).ready(function () {
+let chatbotTable;
+$("#page-title").text("Manage ChatBot");
+$(document).ready(function () {
     getProjects();
+    chatbotTable = $("#chatbotTable").DataTable({
+        ordering: false,
+        searching: false,
+        lengthChange: false,
+        info: false
+    });
+
 });
 
 function getProjects() {
@@ -56,7 +146,121 @@ function viewDetails() {
         nocodealert("Please select a project.", "warning");
         return;
     }
-    console.log("Selected Project ID:", projectId);
+    loadChatbots(projectId)
+}
+function loadChatbots(projectId) {
+
+    $.ajax({
+        url: "/chatbot/loadchatbot",
+        type: "POST",
+        data: { project_id: projectId },
+        success: function (res) {
+            $("#btnCreateChatbot").show();
+            $("#chatbotTableCard").show();
+            if ($.fn.DataTable.isDataTable("#chatbotTable")) {
+                chatbotTable.clear().destroy();
+            }
+
+            $("#chatbotTable tbody").empty();
+            if (res.error_code !== 0 || res.chatbot_list.length === 0) {
+                chatbotTable.draw();
+                return;
+            }
+            for (let i = 0; i < res.chatbot_list.length; i++) {
+                let bot = res.chatbot_list[i];
+                chatbotTable.row.add([
+                    i + 1,
+                    bot.chatbot_name,
+                    bot.chatbot_domain,
+                    bot.chatbot_model,
+                    `<span class="badge" style="background:${bot.chatbot_color_code || '#adb5bd'}">${bot.chatbot_color_code}</span>`,
+                    `<span class="badge bg-success">${bot.status}</span>`,
+                    bot.created_on,
+                    `<button class="btn btn-sm btn-primary me-1"onclick="editChatbot('${bot.id}','${bot.chatbot_domain}','${bot.chatbot_model}','${bot.chatbot_name}','${bot.chatbot_color_code}','${bot.project_id}','${bot.customer_id}')">Edit</button>
+                    <button class="btn btn-sm btn-danger"onclick="deleteChatbot(${bot.id})">Delete</button>
+                    `
+                ]);
+            }
+
+            chatbotTable.draw();
+        },
+        error: function () {
+            nocodealert("Server error while loading chatbot", "error");
+        },
+    });
+}
+
+function saveChatbot() {
+
+    var projectId = $("#project").val();
+    var chatbotName = $("#chatbot_name").val().trim();
+    var chatbotModel = $("#chatbot_model").val();
+    var chatbotDomain = $("#chatbot_domain").val();
+    var chatbotColor = $("#chatbot_color_code").val();
+
+    // Validation
+    if (!projectId) {
+        nocodealert("Please select a project first", "warning");
+        return;
+    }
+    if (!chatbotName) {
+        nocodealert("Chatbot name is required", "warning");
+        return;
+    }
+    if (!chatbotModel) {
+        nocodealert("Please select chatbot model", "warning");
+        return;
+    }
+    if (!chatbotDomain) {
+        nocodealert("Please select chatbot domain", "warning");
+        return;
+    }
+
+    $.ajax({
+        url: "/chatbot/create_chatbot",
+        type: "POST",
+        data: {
+            project_id: projectId,
+            chatbot_name: chatbotName,
+            chatbot_model: chatbotModel,
+            chatbot_domain: chatbotDomain,
+            chatbot_color_code: chatbotColor
+        },
+        success: function (res) {
+            data = JSON.parse(res);
+            if (data["error_code"] === 0) {
+                nocodealert(data["msg"], "success");
+                closeModal();
+                loadChatbots(projectId);
+            } else {
+                nocodealert(data["msg"], "error");
+            }
+        },
+        error: function () {
+            nocodealert("Server error while saving chatbot", "error");
+        },
+    });
+}
+function closeModal() {
+      // Reset form
+    $("#createChatbotModal input").val("");
+    $("#createChatbotModal select").val("");
+    $("#chatbot_color_code").val('#4b38b3');
+    $("#createChatbotModal").text("Create New Chatbot");
+    $('#createChatbotModal').modal('hide');
+
+    $("#btnSaveChatbot").show();
+    $("#btnUpdateChatbot").hide();
+}
+function onChangeProjects() {
+    $("#btnCreateChatbot").hide();
+    $("#chatbotTableCard").hide();
+    if ($.fn.DataTable.isDataTable("#chatbotTable")) {
+        chatbotTable.clear().destroy();
+    }      
+}
+function openCreateModal() {
+    $("#createChatbotModal").modal('show');
 }
 </script>
 
