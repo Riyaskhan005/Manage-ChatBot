@@ -39,7 +39,7 @@ def load_projects():
         return jsonify({"error_code": 0, "projects": projects_list})
     except Exception as e:
         log_writer_.log_exception("manageprojects", "load_projects", e)
-        return jsonify({"error_code": 1, "msg": f"Error loading projects: {str(e)}"}), 500
+        return jsonify({"error_code": 1, "msg": "Something went wrong"}), 500
     
 @bp.route("/save_project", methods=["POST"])
 def save_project():
@@ -83,7 +83,7 @@ def save_project():
     except Exception as e:
         db.session.rollback()
         return_msg["error_code"] = 1
-        return_msg["msg"] = f"Error saving project: {str(e)}"
+        return_msg["msg"] = "Something went wrong"
         log_writer_.log_exception("manageprojects", "save_project", e)
         return json.dumps(return_msg), 500
     
@@ -120,7 +120,7 @@ def update_project():
     except Exception as e:
         db.session.rollback()
         return_msg["error_code"] = 1
-        return_msg["msg"] = f"Error updating project: {str(e)}"
+        return_msg["msg"] = "Something went wrong"
         log_writer_.log_exception("manageprojects", "update_project", e)
         return json.dumps(return_msg), 500
     
@@ -150,6 +150,6 @@ def delete_project():
     except Exception as e:
         db.session.rollback()
         return_msg["error_code"] = 1
-        return_msg["msg"] = f"Error deleting project: {str(e)}"
+        return_msg["msg"] = "Something went wrong"
         log_writer_.log_exception("manageprojects", "delete_project", e)
         return json.dumps(return_msg), 500

@@ -49,7 +49,7 @@ def load_models():
 
     except Exception as e:
         log_writer_.log_exception("managemodels", "load_models", e)
-        return jsonify({"error_code": 1, "msg": f"Error loading models: {str(e)}"}), 500
+        return jsonify({"error_code": 1, "msg": "Something went wrong"}), 500
 
 @bp.route("/save_model", methods=["POST"])
 def save_model():
@@ -100,7 +100,7 @@ def save_model():
     except Exception as e:
         db.session.rollback()
         return_msg["error_code"] = 1
-        return_msg["msg"] = f"Error saving model: {str(e)}"
+        return_msg["msg"] = "Something went wrong"
         log_writer_.log_exception("managemodels", "save_model", e)
         return json.dumps(return_msg), 500
 
@@ -142,7 +142,7 @@ def update_model():
         db.session.rollback()
         log_writer_.log_exception("managemodels", "update_model", e)
         return_msg["error_code"] = 1
-        return_msg["msg"] = f"Error updating model: {str(e)}"
+        return_msg["msg"] = "Something went wrong"
         return json.dumps(return_msg), 500
 
 @bp.route("/delete_model", methods=["POST"])
@@ -174,5 +174,5 @@ def delete_model():
         db.session.rollback()
         log_writer_.log_exception("managemodels", "delete_model", e)
         return_msg["error_code"] = 1
-        return_msg["msg"] = f"Error deleting model: {str(e)}"
+        return_msg["msg"] = "Something went wrong"
         return json.dumps(return_msg), 500
