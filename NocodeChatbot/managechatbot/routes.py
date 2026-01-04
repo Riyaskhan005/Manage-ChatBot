@@ -33,12 +33,14 @@ def loadchatbot():
         chatbots = ManageChatbot.query.filter_by(customer_id=customer_id , project_id=project_id).all()
         chatbot_list = []
         for chatbot in chatbots:
+            model = ManageModels.query.filter_by(id=chatbot.chatbot_model).first()
             chatbot_info = {
                 'id': chatbot.id,
                 'project_id': chatbot.project_id,
                 'customer_id': chatbot.customer_id,
                 'chatbot_name': chatbot.chatbot_name,
                 'chatbot_domain': chatbot.chatbot_domain,
+                'chatbot_model_name': model.model_name if model else "",
                 'chatbot_model': chatbot.chatbot_model,
                 'chatbot_color_code': chatbot.chatbot_color_code, 
                 'created_by': chatbot.created_by,

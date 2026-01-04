@@ -33,7 +33,6 @@
                     <th>Domain</th>
                     <th>Model</th>
                     <th>Color</th>
-                    <th>Status</th>
                     <th>Created On</th>
                     <th>Action</th>
                     </tr>
@@ -206,9 +205,8 @@ function loadChatbots(projectId) {
                     index + 1,
                     bot.chatbot_name,
                     bot.chatbot_domain,
-                    bot.chatbot_model,
+                    bot.chatbot_model_name,
                     `<span class="badge" style="background:${bot.chatbot_color_code || '#adb5bd'}">${bot.chatbot_color_code}</span>`,
-                    `<span class="badge bg-success">${bot.status}</span>`,
                     bot.created_on,
                     `
                     <button class="btn btn-sm btn-primary me-1"
