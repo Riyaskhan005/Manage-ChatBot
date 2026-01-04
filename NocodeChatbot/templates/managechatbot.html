@@ -57,7 +57,7 @@
 
                     <div class="col-md-6">
                         <label class="form-label">Chatbot Name</label>
-                        <input type="text" class="form-control" id="chatbot_name">
+                        <input type="text" class="form-control" id="chatbot_name" placeholder="Enter Chatbot Name">
                     </div>
 
                     <div class="col-md-6">
@@ -106,11 +106,24 @@ $("#page-title").text("Manage ChatBot");
 $(document).ready(function () {
     getProjects();
     chatbotTable = $("#chatbotTable").DataTable({
-        ordering: false,
-        searching: false,
+        paging: true,
+        pageLength: 5,
+        pagingType: "simple",
+        ordering: true,
+        searching: true,
         lengthChange: false,
-        info: false
+        info: true,
+        autoWidth: false,
+        responsive: true,
+        destroy: false,
+        language: {
+            paginate: {
+                previous: '<button class="btn btn-sm btn-outline-primary">Previous</button>',
+                next: '<button class="btn btn-sm btn-outline-primary">Next</button>'
+            }
+        }
     });
+
 
 });
 
@@ -157,36 +170,40 @@ function loadChatbots(projectId) {
         success: function (res) {
             $("#btnCreateChatbot").show();
             $("#chatbotTableCard").show();
-            if ($.fn.DataTable.isDataTable("#chatbotTable")) {
-                chatbotTable.clear().destroy();
-            }
 
-            $("#chatbotTable tbody").empty();
+            chatbotTable.clear();
+
             if (res.error_code !== 0 || res.chatbot_list.length === 0) {
                 chatbotTable.draw();
                 return;
             }
-            for (let i = 0; i < res.chatbot_list.length; i++) {
-                let bot = res.chatbot_list[i];
+            res.chatbot_list.forEach((bot, index) => {
                 chatbotTable.row.add([
-                    i + 1,
+                    index + 1,
                     bot.chatbot_name,
                     bot.chatbot_domain,
                     bot.chatbot_model,
                     `<span class="badge" style="background:${bot.chatbot_color_code || '#adb5bd'}">${bot.chatbot_color_code}</span>`,
                     `<span class="badge bg-success">${bot.status}</span>`,
                     bot.created_on,
-                    `<button class="btn btn-sm btn-primary me-1"onclick="editChatbot('${bot.id}','${bot.chatbot_domain}','${bot.chatbot_model}','${bot.chatbot_name}','${bot.chatbot_color_code}','${bot.project_id}','${bot.customer_id}')">Edit</button>
-                    <button class="btn btn-sm btn-danger"onclick="deleteChatbot(${bot.id})">Delete</button>
+                    `
+                    <button class="btn btn-sm btn-primary me-1"
+                        onclick="editChatbot('${bot.id}','${bot.chatbot_domain}','${bot.chatbot_model}','${bot.chatbot_name}','${bot.chatbot_color_code}','${bot.project_id}','${bot.customer_id}')">
+                        Edit
+                    </button>
+                    <button class="btn btn-sm btn-danger"
+                        onclick="deleteChatbot(${bot.id})">
+                        Delete
+                    </button>
                     `
                 ]);
-            }
+            });
 
             chatbotTable.draw();
         },
         error: function () {
             nocodealert("Server error while loading chatbot", "error");
-        },
+        }
     });
 }
 
@@ -246,7 +263,7 @@ function closeModal() {
     $("#createChatbotModal input").val("");
     $("#createChatbotModal select").val("");
     $("#chatbot_color_code").val('#4b38b3');
-    $("#createChatbotModal").text("Create New Chatbot");
+    $("#createChatbotModal .modal-title").text("Create Chatbot");
     $('#createChatbotModal').modal('hide');
 
     $("#btnSaveChatbot").show();
@@ -255,9 +272,9 @@ function closeModal() {
 function onChangeProjects() {
     $("#btnCreateChatbot").hide();
     $("#chatbotTableCard").hide();
-    if ($.fn.DataTable.isDataTable("#chatbotTable")) {
-        chatbotTable.clear().destroy();
-    }      
+    if (chatbotTable) {
+        chatbotTable.clear().draw();
+    }
 }
 function openCreateModal() {
     $("#createChatbotModal").modal('show');

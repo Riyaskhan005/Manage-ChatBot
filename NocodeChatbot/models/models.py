@@ -5,7 +5,6 @@ class ManageModels(db.Model):
     __tablename__ = 'manage_models'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    project_id = db.Column(db.Text(255), nullable=False)
     customer_id = db.Column(db.Text(255), nullable=False)
     model_config = db.Column(db.Text, nullable=False)
     model_name = db.Column(db.Text, nullable=False)

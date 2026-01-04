@@ -3,7 +3,6 @@ from NocodeChatbot.extensions import db
 from NocodeChatbot.managemodels import bp
 from NocodeChatbot.models.chatbot import ManageChatbot
 from NocodeChatbot.models.Customer import Customers
-from NocodeChatbot.models.projects import Projects
 from NocodeChatbot.models.models import ManageModels
 from NocodeChatbot.utils.logwritter import LogWriter
 from NocodeChatbot.utils.common import get_utc_now
@@ -24,17 +23,12 @@ def load_models():
         if not customer_id:
             return jsonify({"error_code": 1, "msg": "Customer not logged in"})
 
-        project_id = request.args.get("project_id")
-        if not project_id:
-            return jsonify({"error_code": 2, "msg": "Project ID is required"})
-
-        models = ManageModels.query.filter_by(customer_id=customer_id, project_id=project_id).all()
+        models = ManageModels.query.filter_by(customer_id=customer_id).all()
 
         models_list = []
         for model in models:
             models_list.append({
                 "id": model.id,
-                "project_id": model.project_id,
                 "customer_id": model.customer_id,
                 "config": model.model_config,
                 "model_name": model.model_name,
@@ -55,7 +49,6 @@ def load_models():
 def save_model():
     return_msg = {}
     try:
-        project_id = request.form.get("project_id")
         config = request.form.get("config")
         model_name = request.form.get("name")
         model_key = request.form.get("key")
@@ -70,17 +63,15 @@ def save_model():
             return json.dumps(return_msg)
 
         existing_model = ManageModels.query.filter_by(
-            project_id=project_id,
-            model_name=model_name
+            model_name=model_name , customer_id=customer_id
         ).first()
 
         if existing_model:
             return_msg["error_code"] = 3
-            return_msg["msg"] = "Model name already exists for this project"
+            return_msg["msg"] = "Model name already exists for this customer"
             return json.dumps(return_msg)
 
         model = ManageModels(
-            project_id=project_id,
             customer_id=customer_id,
             model_config=config,
             model_name=model_name,
