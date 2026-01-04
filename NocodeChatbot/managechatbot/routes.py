@@ -43,6 +43,7 @@ def loadchatbot():
                 'chatbot_model_name': model.model_name if model else "",
                 'chatbot_model': chatbot.chatbot_model,
                 'chatbot_color_code': chatbot.chatbot_color_code, 
+                'chatbot_language': chatbot.chatbot_language,
                 'created_by': chatbot.created_by,
                 'created_on': chatbot.created_on,
                 'status': chatbot.status
@@ -73,6 +74,7 @@ def create_chatbot():
         chatbot_model = request.form["chatbot_model"]
         chatbot_domain = request.form["chatbot_domain"]
         chatbot_color_code = request.form["chatbot_color_code"]
+        chatbot_language = request.form["chatbot_language"]
 
         existing_bot = ManageChatbot.query.filter_by(
             project_id=project_id,
@@ -92,6 +94,7 @@ def create_chatbot():
             chatbot_model=chatbot_model,
             chatbot_domain=chatbot_domain,
             chatbot_color_code=chatbot_color_code,
+            chatbot_language=chatbot_language,
             created_by=customer_id,
             created_on=get_utc_now(),
             status="Active"
@@ -127,6 +130,7 @@ def update_chatbot():
         chatbot_model = request.form["chatbot_model"]
         chatbot_domain = request.form["chatbot_domain"]
         chatbot_color_code = request.form["chatbot_color_code"]
+        chatbot_language = request.form["chatbot_language"]
 
         chatbot = ManageChatbot.query.filter_by(
             id=chatbot_id,
@@ -143,6 +147,7 @@ def update_chatbot():
         chatbot.chatbot_model = chatbot_model
         chatbot.chatbot_domain = chatbot_domain
         chatbot.chatbot_color_code = chatbot_color_code
+        chatbot.chatbot_language = chatbot_language
 
         db.session.commit()
 
