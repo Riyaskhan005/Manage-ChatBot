@@ -33,6 +33,7 @@
                     <th>Chatbot Name</th>
                     <th>Domain</th>
                     <th>Model</th>
+                    <th>Language</th>
                     <th>Color</th>
                     <th>Created On</th>
                     <th>Action</th>
@@ -115,6 +116,17 @@
                         </div>
                     </div>
 
+                    <div class="col-md-6">
+                        <label class="form-label">Chatbot Language</label>
+                        <select class="form-select" id="chatbot_language" onchange="updatePreview()">
+                            <option value="">Select Language</option>
+                            <option value="en">English</option>
+                            <option value="ta">Tamil</option>
+                            <option value="hi">Hindi</option>
+                            <option value="ar">Arabic</option>
+                        </select>
+                    </div>
+
                     <!-- Chatbot Preview -->
                      <div class="col-12 mt-4">
                         <label class="form-label">Live Preview</label>
@@ -131,31 +143,31 @@
                                 Demo Chatbot
                             </div>
                             <!-- Messages -->
-                            <div style="flex:1;padding:12px;overflow-y:auto;">
-                                <!-- Bot message -->
-                                <div class="bot-msg-wrap">
-                                    <div class="bot-msg theme-border">
-                                        👋 Hi! I am <b><span id="botNamePreview">Demo Chatbot</span></b>.  
-                                        How can I help you today?
+                                <div style="flex:1;padding:12px;overflow-y:auto;">
+                                    <!-- Bot message -->
+                                    <div class="bot-msg-wrap">
+                                        <div class="bot-msg theme-border"><span id="botGreetText">
+                                            👋 Hi! I am <b><span id="botNamePreview">Demo Chatbot</span></b>.  
+                                            How can I help you today?</span>
+                                        </div>
                                     </div>
-                                </div>
-                                <!-- User message -->
-                                <div class="user-msg-wrap">
-                                    <div class="user-msg theme-bg">
-                                        I want some information
+                                    <!-- User message -->
+                                    <div class="user-msg-wrap">
+                                        <div class="user-msg theme-bg" id="userSampleText">
+                                            I want some information
+                                        </div>
                                     </div>
-                                </div>
-                                <!-- Bot reply -->
-                                <div class="bot-msg-wrap">
-                                    <div class="bot-msg theme-border">
-                                        Sure 😊 Please tell me what you’re looking for in
-                                        <b><span id="domainPreviewText">this domain</span></b>.
+                                                                    <!-- Bot reply -->
+                                    <div class="bot-msg-wrap">
+                                        <div class="bot-msg theme-border"> <span id="botFollowupText">
+                                            Sure 😊 Please tell me what you’re looking for in
+                                            <b><span id="domainPreviewText">this domain</span></b>.</span>
+                                        </div>
                                     </div>
-                                </div>
 
-                            </div>
-                            <!-- Input preview -->
-                            <div class="chat-input-preview">
+                                </div>
+                                <!-- Input preview -->
+                                <div class="chat-input-preview">
                                 Type your message…
                                 <span class="send-btn theme-bg">➤</span>
                             </div>
@@ -280,16 +292,29 @@ function loadChatbots(projectId) {
                 return;
             }
             res.chatbot_list.forEach((bot, index) => {
+                let langName = "";
+                if (bot.chatbot_language === "en") {
+                    langName = "English";
+                } else if (bot.chatbot_language === "ta") {
+                    langName = "Tamil";
+                } else if (bot.chatbot_language === "hi") {
+                    langName = "Hindi";
+                } else if (bot.chatbot_language === "ar") {
+                    langName = "Arabic";
+                } else {
+                    langName = bot.chatbot_language;
+                }
                 chatbotTable.row.add([
                     index + 1,
                     bot.chatbot_name,
                     bot.chatbot_domain,
                     bot.chatbot_model_name,
+                    langName,
                     `<span class="badge" style="background:${bot.chatbot_color_code || '#adb5bd'}">${bot.chatbot_color_code}</span>`,
                     bot.created_on,
                     `
                     <button class="btn btn-sm btn-primary me-1"
-                        onclick="editChatbot('${bot.id}','${bot.chatbot_domain}','${bot.chatbot_model}','${bot.chatbot_name}','${bot.chatbot_color_code}','${bot.project_id}','${bot.customer_id}')">
+                        onclick="editChatbot('${bot.id}','${bot.chatbot_domain}','${bot.chatbot_model}','${bot.chatbot_name}','${bot.chatbot_color_code}','${bot.chatbot_language}','${bot.project_id}','${bot.customer_id}')">
                         <i class="ri-pencil-line"></i>
                     </button>
                     <button class="btn btn-sm btn-danger"
@@ -315,6 +340,7 @@ function saveChatbot() {
     var chatbotModel = $("#chatbot_model").val();
     var chatbotDomain = $("#chatbot_domain").val();
     var chatbotColor = $("#chatbot_color_code").val();
+    var chatbotLanguage = $("#chatbot_language").val();
 
     // Validation
     if (!projectId) {
@@ -333,6 +359,10 @@ function saveChatbot() {
         nocodealert("Please select chatbot domain", "warning");
         return;
     }
+    if (!chatbotLanguage) {
+        nocodealert("Please select chatbot language", "warning");
+        return;
+    }
 
     $.ajax({
         url: "/chatbot/create_chatbot",
@@ -342,7 +372,8 @@ function saveChatbot() {
             chatbot_name: chatbotName,
             chatbot_model: chatbotModel,
             chatbot_domain: chatbotDomain,
-            chatbot_color_code: chatbotColor
+            chatbot_color_code: chatbotColor,
+            chatbot_language: chatbotLanguage
         },
         success: function (res) {
             data = JSON.parse(res);
@@ -360,12 +391,13 @@ function saveChatbot() {
     });
 }
 var editChatbotId = null;
-function editChatbot(id, domain, model, name, color_code, project_id, customer_id) {
+function editChatbot(id, domain, model, name, color_code, language, project_id, customer_id) {
     editChatbotId = id
     $("#createChatbotModal .modal-title").text("Edit Chatbot");
     $("#chatbot_name").val(name);
     $("#chatbot_model").val(model);
     $("#chatbot_domain").val(domain);
+    $("#chatbot_language").val(language);
     $("#chatbot_color_code").val(color_code);
 
     $("#btnSaveChatbot").hide();
@@ -380,6 +412,7 @@ function updateChatbot() {
     var chatbotModel = $("#chatbot_model").val();
     var chatbotDomain = $("#chatbot_domain").val();
     var chatbotColor = $("#chatbot_color_code").val();
+    var chatbotLanguage = $("#chatbot_language").val();
     var projectId = $("#project").val();
 
     // Validation
@@ -403,6 +436,10 @@ function updateChatbot() {
         nocodealert("Please select a project first", "warning");
         return;
     }
+    if (!chatbotLanguage) {
+        nocodealert("Please select chatbot language", "warning");
+        return;
+    }
 
     $.ajax({
         url: "/chatbot/update_chatbot",
@@ -413,6 +450,7 @@ function updateChatbot() {
             chatbot_model: chatbotModel,
             chatbot_domain: chatbotDomain,
             chatbot_color_code: chatbotColor,
+            chatbot_language: chatbotLanguage,
             project_id: projectId
         },
         success: function (res) {
@@ -434,6 +472,7 @@ function closeModal() {
       // Reset form
     $("#createChatbotModal input").val("");
     $("#createChatbotModal select").val("");
+    $("#chatbot_language").val("");
     $("#chatbot_color_code").val('#4b38b3');
     $("#createChatbotModal .modal-title").text("Create Chatbot");
     $('#createChatbotModal').modal('hide');
@@ -441,6 +480,7 @@ function closeModal() {
     $("#btnSaveChatbot").show();
     $("#btnUpdateChatbot").hide();
     editChatbotId = null;
+    updatePreview();
 }
 function onChangeProjects() {
     $("#btnCreateChatbot").hide();
@@ -527,6 +567,7 @@ function updatePreview() {
         "background-color": color,
         "color": userTextColor
     });
+    updateLanguagePreview();
 }
 
 
@@ -540,6 +581,57 @@ function isLightColor(hex) {
     var brightness = (r * 299 + g * 587 + b * 114) / 1000;
     return brightness > 180; // light color threshold
 }
+const languageMessages = {
+    en: {
+        greet: "👋 Hi! I am <b>{name}</b>. How can I help you today?",
+        followup: "Sure 😊 Please tell me what you’re looking for in <b>{domain}</b>.",
+        userSample: "I need some information",
+        dir: "ltr"
+    },
+    ta: {
+        greet: "வணக்கம் 👋 நான் <b>{name}</b>. இன்று நான் உங்களுக்கு எப்படி உதவலாம்?",
+        followup: "சரி 😊 <b>{domain}</b> பற்றி நீங்கள் எதைத் தேடுகிறீர்கள்?",
+        userSample: "எனக்கு சில தகவல்கள் வேண்டும்",
+        dir: "ltr"
+    },
+    hi: {
+        greet: "नमस्ते 👋 मैं <b>{name}</b> हूँ। मैं आपकी कैसे मदद कर सकता हूँ?",
+        followup: "ज़रूर 😊 कृपया बताएं आप <b>{domain}</b> में क्या ढूंढ रहे हैं।",
+        userSample: "मुझे कुछ जानकारी चाहिए",
+        dir: "ltr"
+    },
+    ar: {
+        greet: "مرحباً 👋 أنا <b>{name}</b>. كيف يمكنني مساعدتك اليوم؟",
+        followup: "بالتأكيد 😊 أخبرني ماذا تبحث عنه في <b>{domain}</b>.",
+        userSample: "أحتاج إلى بعض المعلومات",
+        dir: "rtl"
+    }
+};
+
+function updateLanguagePreview() {
+    var lang   = $("#chatbot_language").val() || "en";
+    var config = languageMessages[lang];
+
+    var name   = $("#chatbot_name").val().trim() || "Demo Chatbot";
+    var domain = $("#chatbot_domain option:selected").text();
+
+    if (!domain || domain === "Select Domain") {
+        domain = "this domain";
+    }
+
+    $("#botGreetText").html(
+        config.greet.replace("{name}", name)
+    );
+
+    $("#botFollowupText").html(
+        config.followup.replace("{domain}", domain)
+    );
+
+    $("#userSampleText").text(config.userSample);
+
+    $("#chatbotPreview").attr("dir", config.dir);
+}
+
 
 
 </script>
