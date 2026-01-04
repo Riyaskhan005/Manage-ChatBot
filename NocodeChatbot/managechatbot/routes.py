@@ -72,6 +72,17 @@ def create_chatbot():
         chatbot_domain = request.form["chatbot_domain"]
         chatbot_color_code = request.form["chatbot_color_code"]
 
+        existing_bot = ManageChatbot.query.filter_by(
+            project_id=project_id,
+            customer_id=customer_id,
+            chatbot_name=chatbot_name,
+            status="Active"
+        ).first()
+        if existing_bot:
+            return_msg['error_code'] = 1
+            return_msg['msg'] = "Chatbot name already exists in this project."
+            return json.dumps(return_msg)
+
         new_bot = ManageChatbot(
             project_id=project_id,
             customer_id=customer_id,
@@ -93,6 +104,93 @@ def create_chatbot():
 
     except Exception as e:
         db.session.rollback()
+        log_writer_.log_exception("managechatbot", "create_chatbot", e)
         return_msg['error_code'] = 1
         return_msg['msg'] = "Something went wrong"
+        return json.dumps(return_msg)
+    
+@bp.route("/update_chatbot", methods=["POST"])
+def update_chatbot():
+    return_msg = {}
+    try:
+        customer_id = session.get("CustomerId")
+        if not customer_id:
+            return_msg['error_code'] = 1
+            return_msg['msg'] = "Customer not logged in"
+            return json.dumps(return_msg)
+
+        chatbot_id = request.form["chatbot_id"]
+        project_id = request.form["project_id"]
+        chatbot_name = request.form["chatbot_name"]
+        chatbot_model = request.form["chatbot_model"]
+        chatbot_domain = request.form["chatbot_domain"]
+        chatbot_color_code = request.form["chatbot_color_code"]
+
+        chatbot = ManageChatbot.query.filter_by(
+            id=chatbot_id,
+            customer_id=customer_id,
+            status="Active"
+        ).first()
+        if not chatbot:
+            return_msg['error_code'] = 1
+            return_msg['msg'] = "Chatbot not found."
+            return json.dumps(return_msg)
+
+        chatbot.project_id = project_id
+        chatbot.chatbot_name = chatbot_name
+        chatbot.chatbot_model = chatbot_model
+        chatbot.chatbot_domain = chatbot_domain
+        chatbot.chatbot_color_code = chatbot_color_code
+
+        db.session.commit()
+
+        return_msg['error_code'] = 0
+        return_msg['msg'] = "Chatbot updated successfully"
+        return json.dumps(return_msg)
+
+    except Exception as e:
+        db.session.rollback()
+        log_writer_.log_exception("managechatbot", "update_chatbot", e)
+        return_msg['error_code'] = 1
+        return_msg['msg'] = "Something went wrong"
+        return json.dumps(return_msg)
+    
+@bp.route("/delete_chatbot", methods=["POST"])
+def delete_chatbot():
+    return_msg = {}
+    try:
+        customer_id = session.get("CustomerId")
+        if not customer_id:
+            return_msg["error_code"] = 1
+            return_msg["msg"] = "Customer not logged in"
+            return json.dumps(return_msg)
+
+        chatbot_id = request.form.get("chatbot_id")
+        if not chatbot_id:
+            return_msg["error_code"] = 1
+            return_msg["msg"] = "Chatbot id missing"
+            return json.dumps(return_msg)
+
+        chatbot = ManageChatbot.query.filter_by(
+            id=chatbot_id,
+            customer_id=customer_id
+        ).first()
+
+        if not chatbot:
+            return_msg["error_code"] = 1
+            return_msg["msg"] = "Chatbot not found"
+            return json.dumps(return_msg)
+
+        db.session.delete(chatbot)
+        db.session.commit()
+
+        return_msg["error_code"] = 0
+        return_msg["msg"] = "Chatbot deleted successfully"
+        return json.dumps(return_msg)
+
+    except Exception as e:
+        db.session.rollback()
+        log_writer_.log_exception("managechatbot", "delete_chatbot", e)
+        return_msg["error_code"] = 1
+        return_msg["msg"] = "Something went wrong"
         return json.dumps(return_msg)

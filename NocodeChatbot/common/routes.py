@@ -2,6 +2,7 @@ from flask import Flask, render_template,request,jsonify,session
 from NocodeChatbot.extensions import db
 from NocodeChatbot.common import bp
 from NocodeChatbot.models.projects import Projects
+from NocodeChatbot.models.models import ManageModels
 from NocodeChatbot.utils.logwritter import LogWriter 
 # from NocodeChatbot.utils.login_requried import login_required
 log_writer_ = LogWriter()
@@ -32,6 +33,38 @@ def getprojects():
 
     except Exception as e:
         return_msg["error_code"] = 99
-        return_msg["msg"] = f"Unexpected error: {str(e)}"
+        return_msg["msg"] = "something went wrong"
         log_writer_.log_exception("projects", "getprojects", e)
         return jsonify(return_msg)
+
+
+@bp.route('/getmodels', methods=['GET'])
+def getmodels():
+    return_msg = {}
+    model_list = []
+    try:
+        customer_id = session.get("CustomerId")
+        if not customer_id:
+            return_msg["error_code"] = 1
+            return_msg["msg"] = "Session expired. Please login again."
+            return jsonify(return_msg)
+        models = ManageModels.query.filter_by(customer_id=customer_id, status="Active").all()
+        if models:
+            for m in models:
+                model_data = {
+                    "id": m.id,
+                    "model_name": m.model_name,
+                    "model_key": m.model_key,
+                    "model_version": m.model_version,
+                    "model_config": m.model_config
+                }
+                model_list.append(model_data)
+        return_msg["error_code"] = 0
+        return_msg["models"] = model_list
+
+    except Exception as e:
+        return_msg["error_code"] = 1
+        return_msg["msg"] = "something went wrong"
+        log_writer_.log_exception("models", "getmodels", e)
+
+    return jsonify(return_msg)
