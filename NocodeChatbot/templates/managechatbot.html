@@ -1,5 +1,6 @@
 {% extends "base.html" %} {% block title %} Manage ChatBot{% endblock %}
 {% block body %}
+<link href="../static/css/chatbot.css" rel="stylesheet" type="text/css" />
 <div class="container-fluid px-0">
     <div class="card p-4">
         <div class="row align-items-center g-3 px-3">
@@ -56,7 +57,7 @@
 
                     <div class="col-md-6">
                         <label class="form-label">Chatbot Name</label>
-                        <input type="text" class="form-control" id="chatbot_name" placeholder="Enter Chatbot Name">
+                        <input type="text" class="form-control" id="chatbot_name" placeholder="Enter Chatbot Name" onchange="updatePreview()">
                     </div>
 
                     <div class="col-md-6">
@@ -79,7 +80,52 @@
                     <div class="col-md-6">
                         <label class="form-label">Chatbot Color</label>
                         <div class="d-flex gap-2 align-items-center">
-                            <input type="color" class="form-control form-control-color"id="chatbot_color_code" value="#4b38b3">
+                            <input type="color" class="form-control form-control-color"id="chatbot_color_code" value="#4b38b3" onchange="updatePreview()">
+                        </div>
+                    </div>
+
+                    <!-- Chatbot Preview -->
+                     <div class="col-12 mt-4">
+                        <label class="form-label">Live Preview</label>
+                        <div id="chatbotPreview" class="shadow-sm"
+                            style="border-radius:14px;height:340px;display:flex;flex-direction:column;background:#f4f6fb;">
+                            <!-- Header -->
+                            <div id="chatbotPreviewHeader"
+                                style="padding:12px 14px;
+                                        background:#4b38b3;
+                                        color:#fff;
+                                        font-weight:600;
+                                        border-top-left-radius:14px;
+                                        border-top-right-radius:14px;">
+                                Demo Chatbot
+                            </div>
+                            <!-- Messages -->
+                            <div style="flex:1;padding:12px;overflow-y:auto;">
+                                <!-- Bot message -->
+                                <div class="bot-msg-wrap">
+                                    <div class="bot-msg">
+                                        👋 Hi! I am <b><span id="botNamePreview">Demo Chatbot</span></b>.  
+                                        How can I help you today?
+                                    </div>
+                                </div>
+                                <!-- User message -->
+                                <div class="user-msg-wrap">
+                                    <div class="user-msg theme-bg">
+                                        I want some information
+                                    </div>
+                                </div>
+                                <!-- Bot reply -->
+                                <div class="bot-msg-wrap">
+                                    <div class="bot-msg theme-border">
+                                        Sure 😊 Please tell me what you’re looking for.
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Input preview -->
+                            <div class="chat-input-preview">
+                                Type your message…
+                                <span class="send-btn theme-bg">➤</span>
+                            </div>
                         </div>
                     </div>
 
@@ -291,7 +337,7 @@ function editChatbot(id, domain, model, name, color_code, project_id, customer_i
 
     $("#btnSaveChatbot").hide();
     $("#btnUpdateChatbot").show();
-
+    updatePreview();
     $("#createChatbotModal").modal('show');
 }
 
@@ -402,6 +448,60 @@ function deleteChatbot(chatbotId) {
 }
     });
 }
+function updatePreview() {
+    var name  = $("#chatbot_name").val().trim() || "Demo Chatbot";
+    var color = $("#chatbot_color_code").val() || "#4b38b3";
+
+    var isLight = isLightColor(color);
+
+    var headerTextColor = isLight ? "#000" : "#fff";
+    var userTextColor   = isLight ? "#000" : "#fff";
+    var botTextColor    = "#000";
+    var borderColor     = isLight ? "#ddd" : color;
+
+    // Header
+    $("#chatbotPreviewHeader").css({
+        "background-color": color,
+        "color": headerTextColor,
+        "border-bottom": isLight ? "1px solid #ddd" : "none"
+    }).text(name);
+    $("#botNamePreview").text(name);
+    // User message bubble
+    $(".user-msg").css({
+        "background-color": color,
+        "color": userTextColor
+    });
+
+    // Bot messages text
+    $(".bot-msg").css({
+        "color": botTextColor
+    });
+
+    // Accent border on bot reply
+    $(".theme-border").css({
+        "border-left-color": borderColor
+    });
+
+    // Send button
+    $(".send-btn").css({
+        "background-color": color,
+        "color": userTextColor
+    });
+}
+
+
+function isLightColor(hex) {
+    hex = hex.replace('#', '');
+    var r = parseInt(hex.substr(0, 2), 16);
+    var g = parseInt(hex.substr(2, 2), 16);
+    var b = parseInt(hex.substr(4, 2), 16);
+
+    // Perceived brightness formula
+    var brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness > 180; // light color threshold
+}
+
+
 </script>
 
 {% endblock %}
