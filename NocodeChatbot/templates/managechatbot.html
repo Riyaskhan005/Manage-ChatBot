@@ -69,7 +69,7 @@
 
                     <div class="col-md-6">
                         <label class="form-label">Chatbot Domain</label>
-                        <select class="form-select" id="chatbot_domain">
+                        <select class="form-select" id="chatbot_domain" onchange="updatePreview()">
                         <option value="">Select Domain</option>
                         <!-- General -->
                         <option value="general">General / FAQ</option>
@@ -148,9 +148,11 @@
                                 <!-- Bot reply -->
                                 <div class="bot-msg-wrap">
                                     <div class="bot-msg theme-border">
-                                        Sure 😊 Please tell me what you’re looking for.
+                                        Sure 😊 Please tell me what you’re looking for in
+                                        <b><span id="domainPreviewText">this domain</span></b>.
                                     </div>
                                 </div>
+
                             </div>
                             <!-- Input preview -->
                             <div class="chat-input-preview">
@@ -482,6 +484,13 @@ function deleteChatbot(chatbotId) {
 function updatePreview() {
     var name  = $("#chatbot_name").val().trim() || "Demo Chatbot";
     var color = $("#chatbot_color_code").val() || "#4b38b3";
+    var domain = $("#chatbot_domain option:selected").text();
+
+    if (!domain || domain === "Select Domain") {
+        domain = "this domain";
+    }
+
+    $("#domainPreviewText").text(domain);
 
     var isLight = isLightColor(color);
 
