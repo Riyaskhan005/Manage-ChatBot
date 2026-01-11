@@ -5,10 +5,9 @@ NocodeChatbot/authentication/__pycache__/routes.cpython-310.pyc
 NocodeChatbot/authentication/__pycache__/__init__.cpython-310.pyc
 NocodeChatbot/manageprojects/__pycache__/routes.cpython-310.pyc
 NocodeChatbot/__pycache__/__init__.cpython-310.pyc
-NocodeChatBotLogs/2025/10/01/exception.txt
 # Ignore Python bytecode
 __pycache__/
 *.py[cod]
 *.pyo
 
-NocodeChatBotLogs/2026/01/04/exception.txt
+NocodeChatBotLogs
