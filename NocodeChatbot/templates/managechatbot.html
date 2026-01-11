@@ -110,13 +110,6 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label">Chatbot Color</label>
-                        <div class="d-flex gap-2 align-items-center">
-                            <input type="color" class="form-control form-control-color"id="chatbot_color_code" value="#4b38b3" onchange="updatePreview()">
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
                         <label class="form-label">Chatbot Language</label>
                         <select class="form-select" id="chatbot_language" onchange="updatePreview()">
                             <option value="">Select Language</option>
@@ -125,6 +118,39 @@
                             <option value="hi">Hindi</option>
                             <option value="ar">Arabic</option>
                         </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Chatbot Tone / Personality</label>
+                        <div id="chatbot_tone">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="chatbot_tone" value="Professional" id="toneProfessional">
+                                <label class="form-check-label" for="toneProfessional">Professional</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="chatbot_tone" value="Friendly" id="toneFriendly">
+                                <label class="form-check-label" for="toneFriendly">Friendly</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="chatbot_tone" value="Casual" id="toneCasual">
+                                <label class="form-check-label" for="toneCasual">Casual</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="chatbot_tone" value="Sales-oriented" id="toneSales">
+                                <label class="form-check-label" for="toneSales">Sales-oriented</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="chatbot_tone" value="Technical" id="toneTechnical">
+                                <label class="form-check-label" for="toneTechnical">Technical</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Chatbot Color</label>
+                        <div class="d-flex gap-2 align-items-center">
+                            <input type="color" class="form-control form-control-color"id="chatbot_color_code" value="#4b38b3" onchange="updatePreview()">
+                        </div>
                     </div>
 
                     <!-- Chatbot Preview -->
@@ -314,7 +340,7 @@ function loadChatbots(projectId) {
                     bot.created_on,
                     `
                     <button class="btn btn-sm btn-primary me-1"
-                        onclick="editChatbot('${bot.id}','${bot.chatbot_domain}','${bot.chatbot_model}','${bot.chatbot_name}','${bot.chatbot_color_code}','${bot.chatbot_language}','${bot.project_id}','${bot.customer_id}')">
+                        onclick="editChatbot('${bot.id}','${bot.chatbot_domain}','${bot.chatbot_model}','${bot.chatbot_name}','${bot.chatbot_color_code}','${bot.chatbot_language}','${bot.project_id}','${bot.customer_id}','${bot.chatbot_tone}')">
                         <i class="ri-pencil-line"></i>
                     </button>
                     <button class="btn btn-sm btn-danger"
@@ -341,6 +367,7 @@ function saveChatbot() {
     var chatbotDomain = $("#chatbot_domain").val();
     var chatbotColor = $("#chatbot_color_code").val();
     var chatbotLanguage = $("#chatbot_language").val();
+    var chatbotTone = $('input[name="chatbot_tone"]:checked').val();
 
     // Validation
     if (!projectId) {
@@ -363,6 +390,10 @@ function saveChatbot() {
         nocodealert("Please select chatbot language", "warning");
         return;
     }
+    if (!chatbotTone) {
+        nocodealert("Please select chatbot tone/personality", "warning");
+        return;
+    }
 
     $.ajax({
         url: "/chatbot/create_chatbot",
@@ -373,7 +404,8 @@ function saveChatbot() {
             chatbot_model: chatbotModel,
             chatbot_domain: chatbotDomain,
             chatbot_color_code: chatbotColor,
-            chatbot_language: chatbotLanguage
+            chatbot_language: chatbotLanguage,
+            chatbot_tone: chatbotTone
         },
         success: function (res) {
             data = JSON.parse(res);
@@ -391,7 +423,7 @@ function saveChatbot() {
     });
 }
 var editChatbotId = null;
-function editChatbot(id, domain, model, name, color_code, language, project_id, customer_id) {
+function editChatbot(id, domain, model, name, color_code, language, project_id, customer_id, tone) {
     editChatbotId = id
     $("#createChatbotModal .modal-title").text("Edit Chatbot");
     $("#chatbot_name").val(name);
@@ -399,6 +431,7 @@ function editChatbot(id, domain, model, name, color_code, language, project_id, 
     $("#chatbot_domain").val(domain);
     $("#chatbot_language").val(language);
     $("#chatbot_color_code").val(color_code);
+    $(`input[name="chatbot_tone"][value="${tone}"]`).prop("checked", true).trigger("change");
 
     $("#btnSaveChatbot").hide();
     $("#btnUpdateChatbot").show();
@@ -413,6 +446,7 @@ function updateChatbot() {
     var chatbotDomain = $("#chatbot_domain").val();
     var chatbotColor = $("#chatbot_color_code").val();
     var chatbotLanguage = $("#chatbot_language").val();
+    var chatbotTone = $('#chatbot_tone input[type=radio]:checked').val();
     var projectId = $("#project").val();
 
     // Validation
@@ -440,6 +474,10 @@ function updateChatbot() {
         nocodealert("Please select chatbot language", "warning");
         return;
     }
+    if (!chatbotTone) {
+        nocodealert("Please select chatbot tone/personality", "warning");
+        return;
+    }
 
     $.ajax({
         url: "/chatbot/update_chatbot",
@@ -451,6 +489,7 @@ function updateChatbot() {
             chatbot_domain: chatbotDomain,
             chatbot_color_code: chatbotColor,
             chatbot_language: chatbotLanguage,
+            chatbot_tone: chatbotTone,
             project_id: projectId
         },
         success: function (res) {
@@ -470,9 +509,12 @@ function updateChatbot() {
 }
 function closeModal() {
       // Reset form
-    $("#createChatbotModal input").val("");
-    $("#createChatbotModal select").val("");
+     $("#chatbot_name").val("");
+    $("#chatbot_model").val("");
+    $("#chatbot_domain").val("");
     $("#chatbot_language").val("");
+    $("#chatbot_language").val("");
+    $("#chatbot_tone").find("input[type=radio]").prop("checked", false);
     $("#chatbot_color_code").val('#4b38b3');
     $("#createChatbotModal .modal-title").text("Create Chatbot");
     $('#createChatbotModal').modal('hide');
