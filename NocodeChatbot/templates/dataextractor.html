@@ -1,0 +1,358 @@
+{% extends "base.html" %} {% block title %} Manage Models{% endblock %}
+{% block body %}
+<!-- Create Model Button (Hidden Initially) -->
+ <div class="row mb-3" id="extractorBtnContainer" style="display:none;">
+        <div class="col-12">
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createExtractorModel">
+                + Create New Data Extraction
+            </button>
+        </div>
+    </div>
+
+    <div class="row" id="dataContainer"></div>
+</div>
+
+<!-- Create Model Modal -->
+<div class="modal fade" id="createExtractorModel" tabindex="-1" aria-labelledby="createModelModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createModelModalLabel">Create New Data Extraction</h5>
+                <button type="button" class="btn-close" onclick="closeModel()" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="extractorName" class="form-label">Extraction Name</label>
+                    <input type="text" class="form-control" id="extractorName" placeholder="Enter extraction name" required>
+                </div>
+                <div class="mb-3">
+                    <label for="extractorType" class="form-label">Extraction Type</label>
+                    <select class="form-select" id="extractorType" required onchange="OnchangeExtraction()">
+                        <option value="" selected>Choose Extraction Type</option>
+                        <option value="document">Document Extraction</option>
+                        <option value="website">Website Extractor</option>
+                    </select>
+                </div>
+
+                <!-- Document Upload -->
+                <div class="mb-3" id="documentUpload" style="display:none;">
+                    <label for="documentFile" class="form-label">Upload Document (PDF, TXT, Word)</label>
+                    <input type="file" class="form-control" id="documentFile" accept=".pdf,.txt,.doc,.docx">
+                </div>
+
+                <!-- Website URL -->
+                <div class="mb-3" id="websiteInput" style="display:none;">
+                    <label for="websiteURL" class="form-label">Enter Website URL</label>
+                    <input type="url" class="form-control" id="websiteURL" placeholder="https://example.com">
+                    <div class="invalid-feedback">Please enter a valid URL (starting with http:// or https://).</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" onclick="closeModel()">Close</button>
+                <button type="button" class="btn btn-success" id="saveDataBtn" onclick="saveDataExtractor()">Save Data</button>
+                <button type="button" class="btn btn-success" id="updateDataBtn" style="display: none;" onclick="updateExtractor()">Update Data</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+$("#page-title").text("Data Extraction");
+$(document).ready(function() {
+    $("#extractorBtnContainer").show();
+    loadDataextractor();
+});
+function loadDataextractor() {
+    $.ajax({
+        url: "/dataextraction/loaddataextractors",
+        type: "GET",
+        success: function(data) {
+            if (data.error_code === 0) {
+                var html = "";
+                var dataextractors = data.data_extractor_list;
+                if (dataextractors.length === 0) {
+                        html = `
+                            <div class="col-12">
+                                <div class="card border rounded-3 mb-3 text-center shadow-sm">
+                                    <div class="card-body">
+                                        <h6 class="mb-0 text-muted">No extraction found</h6>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                } else {
+                    for (var i = 0; i < dataextractors.length; i++) {
+                        var extractor = dataextractors[i];
+
+                        // Time since creation
+                        var createdAgo = "Not Found";
+                        if (extractor.created_on) {
+                            var diff = Date.now() - new Date(extractor.created_on).getTime();
+                            var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                            if (days < 1) createdAgo = "Today";
+                            else if (days === 1) createdAgo = "1 day ago";
+                            else if (days < 30) createdAgo = days + " days ago";
+                            else if (days < 365) createdAgo = Math.floor(days / 30) + " months ago";
+                            else createdAgo = Math.floor(days / 365) + " years ago";
+                        }
+
+                        // Status Badge
+                        var statusBadge = extractor.status === "Active" 
+                            ? '<span class="badge bg-success">Active</span>' 
+                            : '<span class="badge bg-danger">Inactive</span>';
+
+                        // Logo/Icon based on extraction type
+                        var logo = "";
+                        if (extractor.extractiontype === "website") {
+                            logo = '<i class="ri-global-line me-2" style="font-size:18px;"></i>';
+                        } else if (extractor.extractiontype === "document") {
+                            logo = '<i class="ri-file-text-line me-2" style="font-size:18px;"></i>';
+                        }
+
+                        html += `
+                            <div class="col-xl-4 col-md-6">
+                                <div class="card border rounded-3 mb-3 shadow-sm">
+                                    <!-- Header -->
+                                    <div class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
+                                        <div class="d-flex align-items-center">
+                                            ${logo}
+                                            <h6 class="mb-0">${extractor.name || "Unnamed Extraction"}</h6>
+                                        </div>
+                                        <div class="dropdown">
+                                            <a href="#" class="text-white" data-bs-toggle="dropdown">
+                                                <i class="ri-more-2-fill"></i>
+                                            </a>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li>
+                                                    <a class="dropdown-item" onclick="editModel(${extractor.id}, '${extractor.name}', '${extractor.extractiontype}', '${extractor.extractionFile || ""}', '${extractor.extractionUrl || ""}')">
+                                                        <i class="ri-pencil-line me-2"></i>Edit
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" onclick="deleteModel(${extractor.id})">
+                                                        <i class="ri-delete-bin-line me-2"></i>Delete
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <!-- Body -->
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <div class="text-end">
+                                                ${statusBadge}
+                                            </div>
+                                        </div>
+                                        <p class="text-muted small mb-0"><i class="ri-time-line"></i> ${createdAgo}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+                $("#dataContainer").html(html);
+            } else {
+                nocodealert(data.msg || "No data found", "error");
+            }
+        },
+        error: function() {
+            nocodealert("Failed to load data extraction.", "error");
+        }
+    });
+}
+function closeModel() {
+    $("#extractorName").val('');
+    $("#extractorType").val('');
+    $("#documentFile").val('');
+    $("#websiteURL").val('').removeClass('is-invalid');
+    $("#documentUpload").hide();
+    $("#websiteInput").hide();
+    $("#saveDataBtn").show();
+    $("#updateDataBtn").hide();
+    $("#extractorName").prop("disabled", false);
+    currentExtractorId = null;
+    $("#createModelModalLabel").text("Create New Data Extraction");
+    $('#createExtractorModel').modal('hide');
+}
+function saveDataExtractor() {
+    var name = $("#extractorName").val().trim();
+    var extractiontype = $("#extractorType").val();
+    var extractionFile = $("#documentFile")[0].files[0] || "";
+    var extractionUrl = $("#websiteURL").val().trim() || "";
+
+    if (name === "") {
+        nocodealert("Please enter extraction name.", "error");
+        return;
+    }
+    if (extractiontype === "") {
+        nocodealert("Please select extraction type.", "error");
+        return;
+    }
+    if (extractiontype === "document" && !extractionFile) {
+        nocodealert("Please upload a document file.", "error");
+        return;
+    }
+    if (extractiontype === "website") {
+        var urlPattern = /^(https?:\/\/)/i;
+        if (extractionUrl === "" || !urlPattern.test(extractionUrl)) {
+            $("#websiteURL").addClass("is-invalid");
+            nocodealert("Please enter a valid URL (starting with http:// or https://).", "error");
+            return;
+        } else {
+            $("#websiteURL").removeClass("is-invalid");
+        }
+    }
+
+    $.ajax({
+        url: "/dataextraction/save_data_extractor",
+        type: "POST",
+        data: {
+            name: name,
+            extractiontype: extractiontype,
+            extractionFile: extractionFile,
+            extractionUrl: extractionUrl
+        },
+        success: function (response) {
+            var data = response;
+            if (data.error_code === 0) {
+                nocodealert(data.msg, "success");
+                closeModel();
+                loadDataextractor();
+            } else {
+                nocodealert(data.msg, "error");
+            }
+        },
+        error: function () {
+            nocodealert("Unexpected error occurred.", "error");
+        }
+    });
+}
+
+let currentExtractorId = null;
+
+function editModel(id, name, extractiontype, extractionFile, extractionUrl) {
+    currentExtractorId = id;
+
+    $("#extractorName").val(name);
+    $("#extractorName").prop("disabled", true);
+    $("#extractorType").val(extractiontype);
+    if(extractiontype === "document") {
+        $("#documentUpload").show();
+        $("#websiteInput").hide();
+        $("#documentFile").val(extractionFile);
+    } else if(extractiontype === "website") {
+        $("#websiteInput").show();
+        $("#documentUpload").hide();
+        $("#websiteURL").val(extractionUrl);
+    } else {
+        $("#documentUpload").hide();
+        $("#websiteInput").hide();
+    }
+
+    $("#createModelModalLabel").text("Edit Model");
+    $("#saveDataBtn").hide();
+    $("#updateDataBtn").show();
+
+    $("#createExtractorModel").modal("show");
+}
+
+function updateExtractor() {
+
+    var name = $("#extractorName").val().trim();
+    var extractiontype = $("#extractorType").val();
+    var extractionFile = $("#documentFile")[0].files[0];
+    var extractionUrl = $("#websiteURL").val().trim();
+
+    if (name === "") {
+        nocodealert("Please enter extraction name.", "error");
+        return;
+    }
+    if (extractiontype === "") {
+        nocodealert("Please select extraction type.", "error");
+        return;
+    }
+    if (extractiontype === "document" && !extractionFile) {
+        nocodealert("Please upload a document file.", "error");
+        return;
+    }
+    if (extractiontype === "website") {
+        var urlPattern = /^(https?:\/\/)/i;
+        if (extractionUrl === "" || !urlPattern.test(extractionUrl)) {
+            $("#websiteURL").addClass("is-invalid");
+            nocodealert("Please enter a valid URL (starting with http:// or https://).", "error");
+            return;
+        } else {
+            $("#websiteURL").removeClass("is-invalid");
+        }
+    }
+
+    $.ajax({
+        url: "/dataextraction/update_data_extractor",
+        type: "POST",
+        data: {
+            id: currentExtractorId,
+            name: name,
+            extractiontype: extractiontype,
+            extractionFile: extractionFile,
+            extractionUrl: extractionUrl
+        },
+        success: function(response) {
+            var data = response;
+            if (data.error_code === 0) {
+                nocodealert(data.msg, "success");
+                $("#createExtractorModel").modal("hide");
+                closeModel();
+                loadDataextractor();
+            } else {
+                nocodealert(data.msg, "error");
+            }
+        },
+        error: function() {
+            nocodealert("Unexpected error occurred.", "error");
+        }
+    });
+}
+
+function deleteModel(id) {
+    nocodeConfirm(
+        "Do you really want to delete this data extractor?",
+        "Delete",
+        "Cancel"
+    ).then((confirmed) => {
+        if (confirmed) {
+            $.ajax({
+                url: "/dataextraction/delete_data_extractor",
+                type: "POST",
+                data: { id: id },
+                success: function(response) {
+                    var data = response;
+                    if (data.error_code === 0) {
+                        nocodealert(data.msg, "success");
+                        loadDataextractor();
+                    } else {
+                        nocodealert(data.msg, "error");
+                    }
+                },
+                error: function() {
+                    nocodealert("Unexpected error occurred.", "error");
+                }
+            });
+        }
+    });
+}
+function OnchangeExtraction() {
+    var type = $("#extractorType").val();
+    if(type === "document") {
+        $("#documentUpload").show();
+        $("#websiteInput").hide();
+        $("#websiteURL").val('').removeClass('is-invalid');
+    } else if(type === "website") {
+        $("#websiteInput").show();
+        $("#documentUpload").hide();
+        $("#documentFile").val('');
+    } else {
+        $("#documentUpload, #websiteInput").hide();
+    }
+}
+</script>
+{% endblock %}

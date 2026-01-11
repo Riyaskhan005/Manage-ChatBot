@@ -35,4 +35,7 @@ def create_app(config_class=Config):
     from NocodeChatbot.managechatbot import bp as managechatbot_bp
     app.register_blueprint(managechatbot_bp, url_prefix='/chatbot')
 
+    from NocodeChatbot.dataextractor import bp as dataextractor_bp
+    app.register_blueprint(dataextractor_bp, url_prefix='/dataextraction')
+
     return app
