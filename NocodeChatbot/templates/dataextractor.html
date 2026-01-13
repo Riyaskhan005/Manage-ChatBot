@@ -36,8 +36,19 @@
 
                 <!-- Document Upload -->
                 <div class="mb-3" id="documentUpload" style="display:none;">
-                    <label for="documentFile" class="form-label">Upload Document (PDF, TXT, Word)</label>
-                    <input type="file" class="form-control" id="documentFile" accept=".pdf,.txt,.doc,.docx">
+                    <label class="form-label">Upload Document (PDF, TXT, Word)</label>
+
+                    <input type="file" class="form-control" id="documentFile"
+                        accept=".pdf,.txt,.doc,.docx"
+                        onchange="onFileSelected(this)">
+
+                    <!-- Selected / Existing file row -->
+                    <div class="mt-2" id="selectedFileRow" style="display:none;">
+                        <span class="selected-file-label border rounded px-3 py-1 d-inline-flex align-items-center gap-3">
+                            <small id="selectedFileName" class="text-muted"></small>
+                            <button type="button" class="btn btn-outline-danger p-1" style="line-height:1;" onclick="removeSelectedFile()">&times;</button>
+                        </span>
+                    </div>
                 </div>
 
                 <!-- Website URL -->
@@ -55,6 +66,11 @@
         </div>
     </div>
 </div>
+<div id="loader" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
+     background:rgba(0,0,0,0.5); z-index:9999; text-align:center; color:white; font-size:24px; padding-top:20%;">
+    Processing... Please wait
+</div>
+
 <script>
 $("#page-title").text("Data Extraction");
 $(document).ready(function() {
@@ -70,35 +86,35 @@ function loadDataextractor() {
                 var html = "";
                 var dataextractors = data.data_extractor_list;
                 if (dataextractors.length === 0) {
-                        html = `
-                            <div class="col-12">
-                                <div class="card border rounded-3 mb-3 text-center shadow-sm">
-                                    <div class="card-body">
-                                        <h6 class="mb-0 text-muted">No extraction found</h6>
-                                    </div>
+                    html = `
+                        <div class="col-12">
+                            <div class="card border rounded-3 mb-3 text-center shadow-sm">
+                                <div class="card-body">
+                                    <h6 class="mb-0 text-muted">No extraction found</h6>
                                 </div>
                             </div>
-                        `;
+                        </div>
+                    `;
                 } else {
                     for (var i = 0; i < dataextractors.length; i++) {
                         var extractor = dataextractors[i];
 
-                        // Time since creation
-                        var createdAgo = "Not Found";
+                        // Created on text
+                        var createdText = "Not Found";
                         if (extractor.created_on) {
                             var diff = Date.now() - new Date(extractor.created_on).getTime();
                             var days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                            if (days < 1) createdAgo = "Today";
-                            else if (days === 1) createdAgo = "1 day ago";
-                            else if (days < 30) createdAgo = days + " days ago";
-                            else if (days < 365) createdAgo = Math.floor(days / 30) + " months ago";
-                            else createdAgo = Math.floor(days / 365) + " years ago";
+                            if (days < 1) createdText = "Today";
+                            else if (days === 1) createdText = "1 day ago";
+                            else if (days < 30) createdText = days + " days ago";
+                            else if (days < 365) createdText = Math.floor(days / 30) + " months ago";
+                            else createdText = Math.floor(days / 365) + " years ago";
                         }
 
                         // Status Badge
                         var statusBadge = extractor.status === "Active" 
-                            ? '<span class="badge bg-success">Active</span>' 
-                            : '<span class="badge bg-danger">Inactive</span>';
+                            ? '<span class="badge bg-success me-2">Active</span>' 
+                            : '<span class="badge bg-danger me-2">Inactive</span>';
 
                         // Logo/Icon based on extraction type
                         var logo = "";
@@ -107,6 +123,11 @@ function loadDataextractor() {
                         } else if (extractor.extractiontype === "document") {
                             logo = '<i class="ri-file-text-line me-2" style="font-size:18px;"></i>';
                         }
+
+                        // Body info: type + file/URL (no bold)
+                        var bodyInfo = extractor.extractiontype === "website" 
+                            ? `Type: Website<br>URL: <a href="${extractor.extractionUrl}" target="_blank">${extractor.extractionUrl}</a>`
+                            : `Type: Document<br>File: ${extractor.extractionFile.split('/').pop()}`;
 
                         html += `
                             <div class="col-xl-4 col-md-6">
@@ -117,33 +138,32 @@ function loadDataextractor() {
                                             ${logo}
                                             <h6 class="mb-0">${extractor.name || "Unnamed Extraction"}</h6>
                                         </div>
-                                        <div class="dropdown">
-                                            <a href="#" class="text-white" data-bs-toggle="dropdown">
-                                                <i class="ri-more-2-fill"></i>
-                                            </a>
-                                            <ul class="dropdown-menu dropdown-menu-end">
-                                                <li>
-                                                    <a class="dropdown-item" onclick="editModel(${extractor.id}, '${extractor.name}', '${extractor.extractiontype}', '${extractor.extractionFile || ""}', '${extractor.extractionUrl || ""}')">
-                                                        <i class="ri-pencil-line me-2"></i>Edit
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item" onclick="deleteModel(${extractor.id})">
-                                                        <i class="ri-delete-bin-line me-2"></i>Delete
-                                                    </a>
-                                                </li>
-                                            </ul>
+                                        <div class="d-flex align-items-center">
+                                            ${statusBadge}
+                                            <div class="dropdown">
+                                                <a href="#" class="text-white" data-bs-toggle="dropdown">
+                                                    <i class="ri-more-2-fill"></i>
+                                                </a>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    <li>
+                                                        <a class="dropdown-item" onclick="editModel(${extractor.id}, '${extractor.name}', '${extractor.extractiontype}', '${extractor.extractionFile || ""}', '${extractor.extractionUrl || ""}')">
+                                                            <i class="ri-pencil-line me-2"></i>Edit
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item" onclick="deleteModel(${extractor.id})">
+                                                            <i class="ri-delete-bin-line me-2"></i>Delete
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
                                         </div>
                                     </div>
 
                                     <!-- Body -->
                                     <div class="card-body">
-                                        <div class="d-flex justify-content-between mb-2">
-                                            <div class="text-end">
-                                                ${statusBadge}
-                                            </div>
-                                        </div>
-                                        <p class="text-muted small mb-0"><i class="ri-time-line"></i> ${createdAgo}</p>
+                                        <p class="mb-2">${bodyInfo}</p>
+                                        <p class="text-muted small mb-0">Created on: ${createdText}</p>
                                     </div>
                                 </div>
                             </div>
@@ -172,6 +192,8 @@ function closeModel() {
     $("#extractorName").prop("disabled", false);
     currentExtractorId = null;
     $("#createModelModalLabel").text("Create New Data Extraction");
+    $("#selectedFileName").text('');
+    $("#selectedFileRow").hide();
     $('#createExtractorModel').modal('hide');
 }
 function saveDataExtractor() {
@@ -181,38 +203,41 @@ function saveDataExtractor() {
     var extractionUrl = $("#websiteURL").val().trim() || "";
 
     if (name === "") {
-        nocodealert("Please enter extraction name.", "error");
+        nocodealert("Please enter extraction name.", "warning");
         return;
     }
     if (extractiontype === "") {
-        nocodealert("Please select extraction type.", "error");
+        nocodealert("Please select extraction type.", "warning");
         return;
     }
     if (extractiontype === "document" && !extractionFile) {
-        nocodealert("Please upload a document file.", "error");
+        nocodealert("Please upload a document file.", "warning");
         return;
     }
     if (extractiontype === "website") {
         var urlPattern = /^(https?:\/\/)/i;
         if (extractionUrl === "" || !urlPattern.test(extractionUrl)) {
             $("#websiteURL").addClass("is-invalid");
-            nocodealert("Please enter a valid URL (starting with http:// or https://).", "error");
+            nocodealert("Please enter a valid URL (starting with http:// or https://).", "warning");
             return;
         } else {
             $("#websiteURL").removeClass("is-invalid");
         }
     }
-
+    var formData = new FormData();
+    formData.append("name", name);
+    formData.append("extractiontype", extractiontype);
+    formData.append("extractionFile", extractionFile);
+    formData.append("extractionUrl", extractionUrl);
+    $("#loader").show();
     $.ajax({
         url: "/dataextraction/save_data_extractor",
         type: "POST",
-        data: {
-            name: name,
-            extractiontype: extractiontype,
-            extractionFile: extractionFile,
-            extractionUrl: extractionUrl
-        },
+        data: formData,
+        contentType: false,  
+        processData: false,
         success: function (response) {
+            $("#loader").hide();
             var data = response;
             if (data.error_code === 0) {
                 nocodealert(data.msg, "success");
@@ -223,6 +248,7 @@ function saveDataExtractor() {
             }
         },
         error: function () {
+            $("#loader").hide();
             nocodealert("Unexpected error occurred.", "error");
         }
     });
@@ -233,14 +259,22 @@ let currentExtractorId = null;
 function editModel(id, name, extractiontype, extractionFile, extractionUrl) {
     currentExtractorId = id;
 
-    $("#extractorName").val(name);
-    $("#extractorName").prop("disabled", true);
+    $("#extractorName").val(name).prop("disabled", true);
     $("#extractorType").val(extractiontype);
-    if(extractiontype === "document") {
+    $("#documentFile").val("");
+    $("#selectedFileRow").hide();
+    $("#selectedFileName").text("");
+
+    if (extractiontype === "document") {
         $("#documentUpload").show();
         $("#websiteInput").hide();
-        $("#documentFile").val(extractionFile);
-    } else if(extractiontype === "website") {
+
+        if (extractionFile) {
+            $("#selectedFileName").text(extractionFile.split('/').pop());
+            $("#selectedFileRow").show();
+        }
+
+    } else if (extractiontype === "website") {
         $("#websiteInput").show();
         $("#documentUpload").hide();
         $("#websiteURL").val(extractionUrl);
@@ -252,62 +286,79 @@ function editModel(id, name, extractiontype, extractionFile, extractionUrl) {
     $("#createModelModalLabel").text("Edit Model");
     $("#saveDataBtn").hide();
     $("#updateDataBtn").show();
-
     $("#createExtractorModel").modal("show");
 }
+
+
 
 function updateExtractor() {
 
     var name = $("#extractorName").val().trim();
     var extractiontype = $("#extractorType").val();
-    var extractionFile = $("#documentFile")[0].files[0];
-    var extractionUrl = $("#websiteURL").val().trim();
+    var extractionFile = $("#documentFile")[0].files[0] || "";
+    var extractionUrl = $("#websiteURL").val().trim() || "";
 
     if (name === "") {
-        nocodealert("Please enter extraction name.", "error");
+        nocodealert("Please enter extraction name.", "warning");
         return;
     }
     if (extractiontype === "") {
-        nocodealert("Please select extraction type.", "error");
+        nocodealert("Please select extraction type.", "warning");
         return;
     }
-    if (extractiontype === "document" && !extractionFile) {
-        nocodealert("Please upload a document file.", "error");
-        return;
+
+    if (extractiontype === "document") {
+        var fileSelected = extractionFile || ($("#documentFile").data("removed") !== true && $("#selectedFileName").text() !== "");
+        if (!fileSelected) {
+            nocodealert("Please select a document file before updating.", "warning");
+            return;
+        }
     }
+
     if (extractiontype === "website") {
+
+        if (extractionUrl === "") {
+            nocodealert("Please enter website URL.", "warning");
+            return;
+        }
+
         var urlPattern = /^(https?:\/\/)/i;
-        if (extractionUrl === "" || !urlPattern.test(extractionUrl)) {
+        if (!urlPattern.test(extractionUrl)) {
             $("#websiteURL").addClass("is-invalid");
-            nocodealert("Please enter a valid URL (starting with http:// or https://).", "error");
+            nocodealert("Please enter a valid URL (http:// or https://).", "warning");
             return;
         } else {
             $("#websiteURL").removeClass("is-invalid");
         }
     }
 
+    var formData = new FormData();
+    formData.append("id", currentExtractorId);
+    formData.append("name", name);
+    formData.append("extractiontype", extractiontype);
+    formData.append("extractionFile", extractionFile);
+    formData.append("extractionUrl", extractionUrl);
+
+    $("#loader").show();
+
     $.ajax({
         url: "/dataextraction/update_data_extractor",
         type: "POST",
-        data: {
-            id: currentExtractorId,
-            name: name,
-            extractiontype: extractiontype,
-            extractionFile: extractionFile,
-            extractionUrl: extractionUrl
-        },
+        data: formData,
+        contentType: false,
+        processData: false,
         success: function(response) {
-            var data = response;
-            if (data.error_code === 0) {
-                nocodealert(data.msg, "success");
-                $("#createExtractorModel").modal("hide");
+            $("#loader").hide();
+            if (response.error_code === 0) {
+                nocodealert(response.msg, "success");
                 closeModel();
                 loadDataextractor();
             } else {
-                nocodealert(data.msg, "error");
+                nocodealert(response.msg, "error");
             }
         },
         error: function() {
+            $("#loader").hide();
             nocodealert("Unexpected error occurred.", "error");
         }
     });
@@ -354,5 +405,20 @@ function OnchangeExtraction() {
         $("#documentUpload, #websiteInput").hide();
     }
 }
+function onFileSelected(input) {
+    if (input.files && input.files.length > 0) {
+        $("#selectedFileName").text(input.files[0].name);
+        $("#selectedFileRow").show();
+        $("#removeBtn").show();
+    }
+}
+function removeSelectedFile() {
+    $("#documentFile").val("");       
+    $("#selectedFileName").text("");  
+    $("#selectedFileRow").hide();    
+    $("#documentFile").data("removed", true);
+}
+
+
 </script>
 {% endblock %}
