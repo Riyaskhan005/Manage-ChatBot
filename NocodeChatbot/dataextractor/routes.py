@@ -108,30 +108,55 @@ def save_data_extractor():
         extractionFile = request.files.get('extractionFile')
         extractionUrl = request.form.get('extractionUrl')
         db_file_path = ""
-        exsisting_extractor = DataExtractor.query.filter_by(name=name, customer_id=customer_id).first()
-        if exsisting_extractor:
-            return jsonify({'msg': "Data Extractor with this name already exists.", 'error_code': 1})
+        if not name:
+            return_msg['msg'] = "Extraction name is required."
+            return_msg['error_code'] = 1
+            return jsonify(return_msg)
+
+        if extractiontype not in ["document", "website"]:
+            return_msg['msg'] = "Extraction type must be selected."
+            return_msg['error_code'] = 1
+            return jsonify(return_msg)
+        
+        existing_extractor = DataExtractor.query.filter_by(name=name, customer_id=customer_id).first()
+        if existing_extractor:
+            return_msg['msg'] = "Data Extractor with this name already exists."
+            return_msg['error_code'] = 1
+            return jsonify(return_msg)
 
         extracted_text = ""
         filename = None
         original_file_path = None
 
         if extractiontype.lower() == "website" and extractionUrl:
-            response = requests.get(extractionUrl)
-            soup = BeautifulSoup(response.content, "html.parser")
+            try:
+                response = requests.get(extractionUrl)
+                response.raise_for_status()
+                soup = BeautifulSoup(response.content, "html.parser")
+                elements = soup.find_all(['p','h1','h2','h3','h4','h5','h6','li'])
+                raw_text = "\n\n".join(el.get_text() for el in elements if el.get_text().strip())
+                extracted_text = clean_extracted_text(raw_text)
 
-            elements = soup.find_all(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li'])
-            raw_text = "\n\n".join(el.get_text() for el in elements if el.get_text().strip())
-            extracted_text = clean_extracted_text(raw_text)
+                if not extracted_text:
+                    return_msg['msg'] = "No text could be extracted from the website."
+                    return_msg['error_code'] = 1
+                    return jsonify(return_msg)
 
-
-
-        # Document extraction
-        elif extractiontype.lower() == "document" and extractionFile:
+            except Exception:
+                return_msg['msg'] = "Failed to fetch or parse the website."
+                return_msg['error_code'] = 1
+                return jsonify(return_msg)
+        elif extractiontype == "document":
+            if not extractionFile or extractionFile.filename == "":
+                return_msg['msg'] = "Document file is required for document extraction."
+                return_msg['error_code'] = 1
+                return jsonify(return_msg)
             filename = extractionFile.filename
 
             if not allowed_file(filename):
-                return jsonify({'msg': "File type not supported.", 'error_code': 1})
+                return_msg['msg'] = "File type not supported."
+                return_msg['error_code'] = 1
+                return jsonify(return_msg)
             original_dir = os.path.join(current_app.root_path, "static", "original_file", str(customer_id))
             os.makedirs(original_dir, exist_ok=True)
             original_file_path = os.path.join(original_dir, filename)
@@ -140,7 +165,10 @@ def save_data_extractor():
             raw_text = extract_text_from_file(original_file_path)
             extracted_text = clean_extracted_text(raw_text)
 
-        # Save DB record
+            if not extracted_text:
+                return_msg['msg'] = "The uploaded document is empty or could not be read."
+                return_msg['error_code'] = 1
+                return jsonify(return_msg)
         new_extractor = DataExtractor(
             customer_id=customer_id,
             name=name,
@@ -186,11 +214,15 @@ def update_data_extractor():
         extractionUrl = request.form.get('extractionUrl')
         db_file_path = ""
 
-        extractor = DataExtractor.query.filter_by(
-            id=extractor_id,
-            customer_id=customer_id
-        ).first()
-
+        if not extractor_id:
+            return_msg['msg'] = "Extractor ID is required."
+            return_msg['error_code'] = 1
+            return jsonify(return_msg)
+        if not name:
+            return_msg['msg'] = "Extraction name is required."
+            return_msg['error_code'] = 1
+            return jsonify(return_msg)
+        extractor = DataExtractor.query.filter_by(id=extractor_id, customer_id=customer_id).first()
         if not extractor:
             return_msg['msg'] = "Data Extractor not found."
             return_msg['error_code'] = 1
@@ -199,12 +231,27 @@ def update_data_extractor():
         extracted_text = ""
         filename = None 
         if extractiontype.lower() == "website" and extractionUrl:
-            response = requests.get(extractionUrl)
-            soup = BeautifulSoup(response.content, "html.parser")
-            elements = soup.find_all(['p','h1','h2','h3','h4','h5','h6','li'])
-            raw_text = "\n\n".join(el.get_text() for el in elements if el.get_text().strip())
-            extracted_text = clean_extracted_text(raw_text)
+            if not extractionUrl or not re.match(r'^(https?:\/\/)', extractionUrl, re.I):
+                return_msg['msg'] = "Valid URL is required for website extraction."
+                return_msg['error_code'] = 1
+                return jsonify(return_msg)
+            try:
+                response = requests.get(extractionUrl)
+                response.raise_for_status()
+                soup = BeautifulSoup(response.content, "html.parser")
+                elements = soup.find_all(['p','h1','h2','h3','h4','h5','h6','li'])
+                raw_text = "\n\n".join(el.get_text() for el in elements if el.get_text().strip())
+                extracted_text = clean_extracted_text(raw_text)
 
+                if not extracted_text:
+                    return_msg['msg'] = "No text could be extracted from the website."
+                    return_msg['error_code'] = 1
+                    return jsonify(return_msg)
+
+            except Exception:
+                return_msg['msg'] = "Failed to fetch or parse the website."
+                return_msg['error_code'] = 1
+                return jsonify(return_msg)
             if extractor.extractionFile:
                 old_file_path = os.path.join(current_app.root_path, extractor.extractionFile)
                 if os.path.exists(old_file_path):
@@ -214,6 +261,11 @@ def update_data_extractor():
             extractor.extractionFile = ""
 
         elif extractiontype.lower() == "document" and extractionFile:
+            if not extractionFile or extractionFile.filename == "":
+                return_msg['msg'] = "Document file is required for document extraction."
+                return_msg['error_code'] = 1
+                return jsonify(return_msg)
+
             filename = extractionFile.filename
 
             if not allowed_file(filename):
@@ -235,6 +287,11 @@ def update_data_extractor():
             raw_text = extract_text_from_file(original_file_path)
             extracted_text = clean_extracted_text(raw_text)
 
+            if not extracted_text:
+                return_msg['msg'] = "The uploaded document is empty or could not be read."
+                return_msg['error_code'] = 1
+                return jsonify(return_msg)
+
             extractor.extractionFile = db_file_path
             extractor.extractionUrl = ""
 
@@ -242,12 +299,7 @@ def update_data_extractor():
         extractor.extractiontype = extractiontype
         db.session.commit()
 
-        text_dir = os.path.join(
-            current_app.root_path,
-            "static",
-            "dataextractor",
-            f"{customer_id}_{extractor.id}"
-        )
+        text_dir = os.path.join(current_app.root_path, "static", "dataextractor", f"{customer_id}_{extractor.id}")
         os.makedirs(text_dir, exist_ok=True)
         text_file_path = os.path.join(text_dir, f"{name}.txt")
         with open(text_file_path, "w", encoding="utf-8") as f:
@@ -258,7 +310,7 @@ def update_data_extractor():
 
     except Exception as e:
         log_writer_.log_exception("dataextractor", "update_data_extractor", e)
-        return_msg['msg'] = "Something went wrong"
+        return_msg['msg'] = "Something went wrong."
         return_msg['error_code'] = 1
 
     return jsonify(return_msg)

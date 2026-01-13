@@ -11,3 +11,5 @@ __pycache__/
 *.pyo
 
 NocodeChatBotLogs
+NocodeChatbot/static/dataextractor
+NocodeChatbot/static/original_file
