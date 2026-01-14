@@ -128,6 +128,18 @@ def save_data_extractor():
         filename = None
         original_file_path = None
 
+        new_extractor = DataExtractor(
+            customer_id=customer_id,
+            name=name,
+            extractiontype=extractiontype,
+            extractionFile='',
+            extractionUrl='',
+            created_on=get_utc_now(),
+            status="Active"
+        )
+        db.session.add(new_extractor)
+        db.session.commit()
+
         if extractiontype.lower() == "website" and extractionUrl:
             try:
                 response = requests.get(extractionUrl)
@@ -142,11 +154,12 @@ def save_data_extractor():
                     return_msg['error_code'] = 1
                     return jsonify(return_msg)
 
+                new_extractor.extractionUrl = extractionUrl
             except Exception:
                 return_msg['msg'] = "Failed to fetch or parse the website."
                 return_msg['error_code'] = 1
                 return jsonify(return_msg)
-        elif extractiontype == "document":
+        elif extractiontype.lower() == "document":
             if not extractionFile or extractionFile.filename == "":
                 return_msg['msg'] = "Document file is required for document extraction."
                 return_msg['error_code'] = 1
@@ -157,11 +170,12 @@ def save_data_extractor():
                 return_msg['msg'] = "File type not supported."
                 return_msg['error_code'] = 1
                 return jsonify(return_msg)
-            original_dir = os.path.join(current_app.root_path, "static", "original_file", str(customer_id))
+            original_dir = os.path.join(current_app.root_path, "static", "original_file", f"{customer_id}_{new_extractor.id}")
             os.makedirs(original_dir, exist_ok=True)
             original_file_path = os.path.join(original_dir, filename)
             extractionFile.save(original_file_path)
-            db_file_path = f"static/original_file/{customer_id}/{filename}"
+            db_file_path = f"static/original_file/{customer_id}_{new_extractor.id}/{filename}"
+            new_extractor.extractionFile = db_file_path
             raw_text = extract_text_from_file(original_file_path)
             extracted_text = clean_extracted_text(raw_text)
 
@@ -169,18 +183,6 @@ def save_data_extractor():
                 return_msg['msg'] = "The uploaded document is empty or could not be read."
                 return_msg['error_code'] = 1
                 return jsonify(return_msg)
-        new_extractor = DataExtractor(
-            customer_id=customer_id,
-            name=name,
-            extractiontype=extractiontype,
-            extractionFile=db_file_path if extractiontype.lower() == "document" else '',
-            extractionUrl=extractionUrl if extractiontype.lower() == "website" else '',
-            created_on=get_utc_now(),
-            status="Active"
-        )
-        db.session.add(new_extractor)
-        db.session.commit()
-
         text_dir = os.path.join(current_app.root_path, "static", "dataextractor", f"{customer_id}_{new_extractor.id}")
         os.makedirs(text_dir, exist_ok=True)
 
@@ -188,6 +190,7 @@ def save_data_extractor():
         with open(text_file_path, "w", encoding='utf-8') as f:
             f.write(extracted_text)
 
+        db.session.commit()
         return_msg['msg'] = "Data Extractor saved successfully."
         return_msg['error_code'] = 0
 
@@ -278,11 +281,13 @@ def update_data_extractor():
                 if os.path.exists(old_file_path):
                     os.remove(old_file_path)
 
-            original_dir = os.path.join(current_app.root_path, "static", "original_file", str(customer_id))
+            original_dir = os.path.join(current_app.root_path, "static", "original_file", f"{customer_id}_{extractor.id}")
             os.makedirs(original_dir, exist_ok=True)
             original_file_path = os.path.join(original_dir, filename)
             extractionFile.save(original_file_path)
-            db_file_path = f"static/original_file/{customer_id}/{filename}"
+            db_file_path = f"static/original_file/{customer_id}_{extractor.id}/{filename}"
+            extractor.extractionFile = db_file_path
+            extractor.extractionUrl = ""
 
             raw_text = extract_text_from_file(original_file_path)
             extracted_text = clean_extracted_text(raw_text)
@@ -291,9 +296,6 @@ def update_data_extractor():
                 return_msg['msg'] = "The uploaded document is empty or could not be read."
                 return_msg['error_code'] = 1
                 return jsonify(return_msg)
-
-            extractor.extractionFile = db_file_path
-            extractor.extractionUrl = ""
 
         extractor.name = name
         extractor.extractiontype = extractiontype
@@ -354,12 +356,20 @@ def delete_data_extractor():
                 current_app.root_path,
                 "static",
                 "original_file",
-                str(customer_id),
-                extractor.extractionFile
+                f"{customer_id}_{extractor.id}",
+                os.path.basename(extractor.extractionFile)
             )
             if os.path.exists(original_file_path):
                 os.remove(original_file_path)
 
+            original_dir = os.path.join(
+                current_app.root_path,
+                "static",
+                "original_file",
+                f"{customer_id}_{extractor.id}"
+            )
+            if os.path.exists(original_dir) and not os.listdir(original_dir):
+                os.rmdir(original_dir)
         db.session.delete(extractor)
         db.session.commit()
 
