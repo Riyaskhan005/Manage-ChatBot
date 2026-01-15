@@ -1,5 +1,6 @@
 {% extends "base.html" %} {% block title %} ChatBot Builder {% endblock %}
 {% block body %}
+ <link rel="stylesheet" href="../static/css/drawflow.css">
 <div class="container-fluid px-0">
     <div class="card p-4">
         <div class="row align-items-center g-3 px-3">
@@ -17,13 +18,98 @@
             </div>
         </div>
     </div>
+
+<div id="builderContainer" class="dotted-panel" style="display: none;">
+  <div class="flow">
+    <div class="node with-dots">
+      <span class="dot right"></span>
+      <h3><i class="ri-database-2-line"></i> Data Extraction</h3>
+      <a href="#" data-bs-toggle="modal" data-bs-target="#extractDataModal">
+        + Add Extracted Data
+      </a>
+    </div>
+
+    <div class="connector"></div>
+
+    <div class="node with-dots">
+      <span class="dot left"></span>
+      <span class="dot right"></span>
+      <h3><i class="ri-robot-2-line"></i> Chatbot</h3>
+      <a href="#" data-bs-toggle="modal" data-bs-target="#chatBotModal">
+        + Add Chatbot
+      </a>
+    </div>
+
+    <div class="connector"></div>
+
+    <div class="node with-dots action">
+      <span class="dot left"></span>
+      <button class="btn btn-success">
+        <i class="ri-brain-line"></i> Build
+      </button>
+    </div>
+  </div>
 </div>
+<div class="modal fade" id="extractDataModal" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="ri-database-2-line"></i> Select Data Extraction
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+       <div id="extractorList" class="list-group text-center text-muted">
+            Loading data extractors...
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-secondary">Add</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="chatBotModal" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="ri-robot-2-line"></i> Select ChatBot
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <div id="chatbotList" class="list-group text-center text-muted">
+          Loading chatbots...
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-secondary">Add</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</div>
+
 
 <script>
 let chatbotTable;
 $("#page-title").text("ChatBot Builder");
 $(document).ready(function () {
     getProjects();
+    loadDataExtractors();
 });
 
 
@@ -59,14 +145,108 @@ function viewDetails() {
         nocodealert("Please select a project.", "warning");
         return;
     }
-    loadBuilder(projectId)
+    loadChatbots(projectId);
+    loadBuilder(projectId);
 }
 function loadBuilder(projectId) {
-
+    $("#builderContainer").show();
    
 }
+function onChangeProjects() {
+   $("#builderContainer").hide();
+}
+function loadDataExtractors() {
+  $.ajax({
+    url: "/dataextraction/loaddataextractors",
+    type: "GET",
+      success: function(data) {
+            if (data.error_code === 0) {
+                var html = "";
+                var dataextractors = data.data_extractor_list;
 
+                if (dataextractors.length === 0) {
+                    html = '<div class="text-muted text-center">No data extractors found.</div>';
+                } else {
+                    for (var i = 0; i < dataextractors.length; i++) {
+                        var extractor = dataextractors[i];
 
+                        // Extract only file name
+                        var fileName = extractor.extractionFile
+                            ? extractor.extractionFile.split('/').pop().split('\\').pop()
+                            : "";
+
+                        var urlName = extractor.extractionUrl || "";
+
+                        var displayName = fileName || urlName || "N/A";
+
+                        // Combined HTML string for this extractor
+                        html += '<label class="list-group-item d-flex align-items-center gap-3">' +
+                                    '<input class="form-check-input" type="radio" name="extractor_id" value="' + extractor.id + '">' +
+                                    '<div class="flex-grow-1 text-start">' +
+                                        '<div class="fw-semibold">' + extractor.name + '</div>' +
+                                        '<small class="text-muted">' + extractor.extractiontype + ' · ' + displayName + '</small>' +
+                                    '</div>' +
+                                '</label>';
+                    }
+                }
+
+                $("#extractorList").html(html);
+
+            } else {
+                nocodealert(data.msg || "No data found", "error");
+            }
+        },
+        error: function() {
+            nocodealert("Failed to load data extraction.", "error");
+        }
+    });
+}
+function loadChatbots(projectId) {
+    $.ajax({
+        url: "/chatbot/loadchatbot",
+        type: "POST",
+        data: { project_id: projectId },
+        success: function(data) {
+            if (data.error_code === 0) {
+                var html = "";
+                var chatbots = data.chatbot_list;
+
+                if (chatbots.length === 0) {
+                    html = '<div class="text-muted text-center">No chatbots found.</div>';
+                } else {
+                    for (var i = 0; i < chatbots.length; i++) {
+                        var bot = chatbots[i];
+
+                        var displayName = bot.chatbot_name || "Unnamed Bot";
+                        var modelName = bot.chatbot_model_name || "";
+                        var domain = bot.chatbot_domain || "";
+                        var language = bot.chatbot_language || "N/A";
+
+                        html += '<label class="list-group-item d-flex align-items-center gap-3">' +
+                            '<input class="form-check-input" type="radio" name="chatbot_id" value="' + bot.id + '">' +
+                            '<div class="flex-grow-1 text-start">' +
+                                '<div class="fw-semibold" data-bs-toggle="tooltip" title="Chatbot Name: ' + displayName + '">' + displayName + '</div>' +
+                                '<small class="text-muted">' +
+                                    '<span data-bs-toggle="tooltip" title="Model: ' + modelName + '">' + modelName + '</span> · ' +
+                                    '<span data-bs-toggle="tooltip" title="Domain: ' + domain + '">' + domain + '</span> · ' +
+                                    '<span data-bs-toggle="tooltip" title="Language: ' + language + '">' + language + '</span>' +
+                                '</small>' +
+                            '</div>' +
+                        '</label>';
+                    }
+                }
+
+                $("#chatbotList").html(html);
+                $('[data-bs-toggle="tooltip"]').tooltip();
+            } else {
+                nocodealert(data.msg || "No chatbots found.", "error");
+            }
+        },
+        error: function() {
+            nocodealert("Failed to load chatbots.", "error");
+        }
+    });
+}
 </script>
 
 {% endblock %}

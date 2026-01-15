@@ -33,6 +33,8 @@ def login():
 
         session['email'] = customer.Email
         session['CustomerId'] = customer.id
+        session['FirstName'] = customer.First_name
+        session['LastName'] = customer.Last_name
 
         return_msg["error_code"] = 0
         return_msg["msg"] = "Login successful"

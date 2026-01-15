@@ -113,10 +113,10 @@
                         <label class="form-label">Chatbot Language</label>
                         <select class="form-select" id="chatbot_language" onchange="updatePreview()">
                             <option value="">Select Language</option>
-                            <option value="en">English</option>
-                            <option value="ta">Tamil</option>
-                            <option value="hi">Hindi</option>
-                            <option value="ar">Arabic</option>
+                            <option value="English">English</option>
+                            <option value="Tamil">Tamil</option>
+                            <option value="Hindi">Hindi</option>
+                            <option value="Arabic">Arabic</option>
                         </select>
                     </div>
 
@@ -318,18 +318,7 @@ function loadChatbots(projectId) {
                 return;
             }
             res.chatbot_list.forEach((bot, index) => {
-                let langName = "";
-                if (bot.chatbot_language === "en") {
-                    langName = "English";
-                } else if (bot.chatbot_language === "ta") {
-                    langName = "Tamil";
-                } else if (bot.chatbot_language === "hi") {
-                    langName = "Hindi";
-                } else if (bot.chatbot_language === "ar") {
-                    langName = "Arabic";
-                } else {
-                    langName = bot.chatbot_language;
-                }
+                let langName = bot.chatbot_language;
                 chatbotTable.row.add([
                     index + 1,
                     bot.chatbot_name,

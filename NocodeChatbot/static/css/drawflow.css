@@ -1,0 +1,126 @@
+:root {
+  --node-title-color: #111;
+  --node-text-color: #555;
+  --node-bg: #ffffff;
+  --connector-color: #999;
+}
+
+[data-theme="dark"] {
+  --node-title-color: #f5f5f5;
+  --node-text-color: #bdbdbd;
+  --node-bg: #1e1e1e;
+   --connector-color: #ccc;
+}
+
+.dotted-panel { 
+  display: block;
+  background: transparent;
+  padding: 40px;
+  position: relative;
+  border-radius: 10px;
+  height: 390px;
+  border: 2px solid #ccc; 
+  background-image: radial-gradient(#ccc 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+.flow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.node {
+  border-radius: 10px;
+  padding: 20px 25px;
+  min-width: 180px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  background: var(--node-bg);
+  position: relative; 
+}
+.node::before,
+.node::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  background: var(--connector-color);
+  border-radius: 50%;
+  transform: translateY(-50%);
+}
+
+/* left dot */
+.node::before {
+  left: -6px;
+}
+
+/* right dot */
+.node::after {
+  right: -6px;
+}
+
+/* first node doesn’t need left dot */
+.node:first-child::before {
+  display: none;
+}
+
+/* last node doesn’t need right dot */
+.node:last-child::after {
+  display: none;
+}
+.node h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  color: var(--node-title-color);
+}
+
+.node a {
+  margin: 0;
+  font-size: 13px;
+  color: var(--node-text-color);
+}
+
+.arrow {
+  font-size: 28px;
+  color: #999;
+  margin: 0 10px;
+}
+
+.node.action {
+  padding: 20px;
+}
+
+.node.action button {
+  padding: 12px 26px;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 15px;
+}
+:root {
+  --connector-color: #999;
+}
+
+[data-theme="dark"] {
+  --connector-color: #ccc;
+}
+
+.connector {
+  flex: 1;
+  height: 2px;
+  margin: 0 10px;
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--connector-color) 0 6px,
+    transparent 6px 12px
+  );
+  animation: dash-move 1.5s linear infinite;
+}
+
+@keyframes dash-move {
+  to {
+    background-position: 24px 0;
+  }
+}
