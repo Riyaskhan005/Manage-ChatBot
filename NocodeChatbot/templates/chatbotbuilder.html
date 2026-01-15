@@ -24,23 +24,48 @@
     <div class="node with-dots">
       <span class="dot right"></span>
       <h3><i class="ri-database-2-line"></i> Data Extraction</h3>
-      <a href="#" data-bs-toggle="modal" data-bs-target="#extractDataModal">
-        + Add Extracted Data
-      </a>
+        <div class="node-content">
+            <div id="addExtractorLink">
+                <a href="#" data-bs-toggle="modal" data-bs-target="#extractDataModal">
+                + Add Extracted Data
+                </a>
+            </div>
+
+            <div id="selectedExtractor"
+                class="d-none selected-data d-flex align-items-center justify-content-between px-2 mb-2">
+                <span id="selectedExtractorName"></span>
+                <button class="btn btn-sm btn-outline-danger ms-2" onclick="removeExtractor()">
+                <i class="ri-close-line"></i>
+                </button>
+            </div>
+        </div>
     </div>
 
-    <div class="connector"></div>
+    <div class="extractor-connector"></div>
 
-    <div class="node with-dots">
-      <span class="dot left"></span>
-      <span class="dot right"></span>
-      <h3><i class="ri-robot-2-line"></i> Chatbot</h3>
-      <a href="#" data-bs-toggle="modal" data-bs-target="#chatBotModal">
-        + Add Chatbot
-      </a>
+    <div class="node with-dots chatbot-node">
+        <span class="dot left"></span>
+        <span class="dot right"></span>
+        <h3><i class="ri-robot-2-line"></i> Chatbot</h3>
+
+        <div class="node-content">
+            <div id="addChatbotLink">
+            <a href="#" data-bs-toggle="modal" data-bs-target="#chatBotModal">
+                + Add Chatbot
+            </a>
+            </div>
+
+            <div id="selectedChatbot"
+                class="d-none selected-data d-flex align-items-center justify-content-between px-2 mb-2">
+            <span id="selectedChatbotName"></span>
+            <button class="btn btn-sm btn-outline-danger ms-2" onclick="removeChatbot()">
+                <i class="ri-close-line"></i>
+            </button>
+            </div>
+        </div>
     </div>
 
-    <div class="connector"></div>
+    <div class="chatbot-connector"></div>
 
     <div class="node with-dots action">
       <span class="dot left"></span>
@@ -69,7 +94,7 @@
 
       <div class="modal-footer">
         <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-        <button class="btn btn-secondary">Add</button>
+        <button class="btn btn-secondary" onclick="addExtractor()">Add</button>
       </div>
 
     </div>
@@ -94,7 +119,7 @@
 
       <div class="modal-footer">
         <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-        <button class="btn btn-secondary">Add</button>
+        <button class="btn btn-secondary" onclick="addChatbot()">Add</button>
       </div>
 
     </div>
@@ -246,6 +271,70 @@ function loadChatbots(projectId) {
             nocodealert("Failed to load chatbots.", "error");
         }
     });
+}
+let selectedExtractorId = null;
+let selectedChatbotId = null;
+
+function addExtractor() {
+    const selectedRadio = $('input[name="extractor_id"]:checked');
+    if (!selectedRadio.length) {
+        nocodealert("Please select a data extractor.", "warning");
+        return;
+    }
+    selectedExtractorId = selectedRadio.val();
+    const label = selectedRadio.closest('label');
+    const name = label.find('.fw-semibold').text().trim();
+    $("#selectedExtractorName").text(name);
+    $("#selectedExtractor").removeClass("d-none");
+    $("#addExtractorLink").hide();
+    $("#extractDataModal").modal("hide");
+    const node = $(".node.with-dots").first();
+    node.addClass("active");
+    $(".extractor-connector").addClass("active");
+    $(".chatbot-node").addClass("prev-active");
+}
+
+function removeExtractor() {
+    selectedExtractorId = null;
+    $("#selectedExtractor").addClass("d-none");
+    $("#selectedExtractorName").text("");
+    $("#addExtractorLink").show();
+    $('input[name="extractor_id"]').prop('checked', false);
+    const node = $(".node.with-dots").first();
+    node.removeClass("active");
+    $(".extractor-connector").removeClass("active");
+    $(".chatbot-node").removeClass("prev-active");
+}
+
+function addChatbot() {
+    const selectedRadio = $('input[name="chatbot_id"]:checked');
+    if (!selectedRadio.length) {
+        nocodealert("Please select a chatbot.", "warning");
+        return;
+    }
+    selectedChatbotId = selectedRadio.val();
+    const label = selectedRadio.closest('label');
+    const name = label.find('.fw-semibold').text().trim();
+    $("#selectedChatbotName").text(name);
+    $("#selectedChatbot").removeClass("d-none");
+    $("#addChatbotLink").hide();
+    $("#chatBotModal").modal("hide");
+    const node = $(".chatbot-node");
+    node.addClass("active");
+    $(".chatbot-connector").addClass("active");
+    $(".node.action").addClass("prev-active");
+}
+
+function removeChatbot() {
+    selectedChatbotId = null;
+    $("#selectedChatbot").addClass("d-none");
+    $("#selectedChatbotName").text("");
+    $("#addChatbotLink").show();
+    $('input[name="chatbot_id"]').prop('checked', false);
+    const node = $(".chatbot-node");
+    node.removeClass("active");
+    $(".chatbot-connector").removeClass("active");
+    $(".node.action").removeClass("prev-active");
 }
 </script>
 
