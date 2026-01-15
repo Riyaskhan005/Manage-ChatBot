@@ -149,8 +149,14 @@
                     <div class="col-md-6">
                         <label class="form-label">Chatbot Color</label>
                         <div class="d-flex gap-2 align-items-center">
-                            <input type="color" class="form-control form-control-color"id="chatbot_color_code" value="#4b38b3" onchange="updatePreview()">
+                            <input type="color" class="form-control form-control-color" id="chatbot_color_code" value="#4b38b3" onchange="updatePreview()">
                         </div>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Custom Instructions <i>(Optional)</i>
+                            <i class="ri-information-line" data-bs-toggle="tooltip" title="Enter any instructions or special options for the chatbot"></i>
+                        </label>
+                        <textarea class="form-control" id="chatbot_instructions" rows="4" placeholder="Enter instructions for your chatbot"></textarea>
                     </div>
 
                     <!-- Chatbot Preview -->
@@ -329,7 +335,7 @@ function loadChatbots(projectId) {
                     bot.created_on,
                     `
                     <button class="btn btn-sm btn-primary me-1"
-                        onclick="editChatbot('${bot.id}','${bot.chatbot_domain}','${bot.chatbot_model}','${bot.chatbot_name}','${bot.chatbot_color_code}','${bot.chatbot_language}','${bot.project_id}','${bot.customer_id}','${bot.chatbot_tone}')">
+                        onclick="editChatbot('${bot.id}','${bot.chatbot_domain}','${bot.chatbot_model}','${bot.chatbot_name}','${bot.chatbot_color_code}','${bot.chatbot_language}','${bot.project_id}','${bot.customer_id}','${bot.chatbot_tone}','${bot.chatbot_instructions}')">
                         <i class="ri-pencil-line"></i>
                     </button>
                     <button class="btn btn-sm btn-danger"
@@ -357,6 +363,7 @@ function saveChatbot() {
     var chatbotColor = $("#chatbot_color_code").val();
     var chatbotLanguage = $("#chatbot_language").val();
     var chatbotTone = $('input[name="chatbot_tone"]:checked').val();
+    var chatbotInstructions = $("#chatbot_instructions").val() || "";
 
     // Validation
     if (!projectId) {
@@ -394,7 +401,8 @@ function saveChatbot() {
             chatbot_domain: chatbotDomain,
             chatbot_color_code: chatbotColor,
             chatbot_language: chatbotLanguage,
-            chatbot_tone: chatbotTone
+            chatbot_tone: chatbotTone,
+            chatbot_instructions: chatbotInstructions
         },
         success: function (res) {
             data = JSON.parse(res);
@@ -412,7 +420,7 @@ function saveChatbot() {
     });
 }
 var editChatbotId = null;
-function editChatbot(id, domain, model, name, color_code, language, project_id, customer_id, tone) {
+function editChatbot(id, domain, model, name, color_code, language, project_id, customer_id, tone, instructions) {
     editChatbotId = id
     $("#createChatbotModal .modal-title").text("Edit Chatbot");
     $("#chatbot_name").val(name);
@@ -421,6 +429,7 @@ function editChatbot(id, domain, model, name, color_code, language, project_id, 
     $("#chatbot_language").val(language);
     $("#chatbot_color_code").val(color_code);
     $(`input[name="chatbot_tone"][value="${tone}"]`).prop("checked", true).trigger("change");
+    $("#chatbot_instructions").val(instructions);
 
     $("#btnSaveChatbot").hide();
     $("#btnUpdateChatbot").show();
@@ -437,6 +446,7 @@ function updateChatbot() {
     var chatbotLanguage = $("#chatbot_language").val();
     var chatbotTone = $('#chatbot_tone input[type=radio]:checked').val();
     var projectId = $("#project").val();
+    var chatbotInstructions = $("#chatbot_instructions").val() || "";
 
     // Validation
     if (!chatbotName) {
@@ -479,7 +489,8 @@ function updateChatbot() {
             chatbot_color_code: chatbotColor,
             chatbot_language: chatbotLanguage,
             chatbot_tone: chatbotTone,
-            project_id: projectId
+            project_id: projectId,
+            chatbot_instructions: chatbotInstructions
         },
         success: function (res) {
             data = JSON.parse(res);
@@ -503,6 +514,7 @@ function closeModal() {
     $("#chatbot_domain").val("");
     $("#chatbot_language").val("");
     $("#chatbot_language").val("");
+    $("#chatbot_instructions").val("");
     $("#chatbot_tone").find("input[type=radio]").prop("checked", false);
     $("#chatbot_color_code").val('#4b38b3');
     $("#createChatbotModal .modal-title").text("Create Chatbot");
@@ -613,25 +625,25 @@ function isLightColor(hex) {
     return brightness > 180; // light color threshold
 }
 const languageMessages = {
-    en: {
+    English: {
         greet: "👋 Hi! I am <b>{name}</b>. How can I help you today?",
         followup: "Sure 😊 Please tell me what you’re looking for in <b>{domain}</b>.",
         userSample: "I need some information",
         dir: "ltr"
     },
-    ta: {
+    Tamil: {
         greet: "வணக்கம் 👋 நான் <b>{name}</b>. இன்று நான் உங்களுக்கு எப்படி உதவலாம்?",
         followup: "சரி 😊 <b>{domain}</b> பற்றி நீங்கள் எதைத் தேடுகிறீர்கள்?",
         userSample: "எனக்கு சில தகவல்கள் வேண்டும்",
         dir: "ltr"
     },
-    hi: {
+    Hindi: {
         greet: "नमस्ते 👋 मैं <b>{name}</b> हूँ। मैं आपकी कैसे मदद कर सकता हूँ?",
         followup: "ज़रूर 😊 कृपया बताएं आप <b>{domain}</b> में क्या ढूंढ रहे हैं।",
         userSample: "मुझे कुछ जानकारी चाहिए",
         dir: "ltr"
     },
-    ar: {
+    Arabic: {
         greet: "مرحباً 👋 أنا <b>{name}</b>. كيف يمكنني مساعدتك اليوم؟",
         followup: "بالتأكيد 😊 أخبرني ماذا تبحث عنه في <b>{domain}</b>.",
         userSample: "أحتاج إلى بعض المعلومات",

@@ -13,6 +13,7 @@ class ManageChatbot(db.Model):
     chatbot_language = db.Column(db.Text(100), nullable=False)
     chatbot_tone = db.Column(db.Text(100), nullable=False)
     chatbot_model = db.Column(db.Text(255), nullable=False)
+    chatbot_instructions = db.Column(db.Text, nullable=True)
     created_by = db.Column(db.Text(255), nullable=False)
     created_on = db.Column(db.Text(255))
     status = db.Column(db.Text(20), nullable=False, default="Active")
