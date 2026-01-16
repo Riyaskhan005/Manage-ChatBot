@@ -35,6 +35,7 @@ def login():
         session['CustomerId'] = customer.id
         session['FirstName'] = customer.First_name
         session['LastName'] = customer.Last_name
+        session['Profilepath'] = customer.ProfilePath
 
         return_msg["error_code"] = 0
         return_msg["msg"] = "Login successful"
@@ -52,6 +53,14 @@ def logout():
     try:
         session['email'] = ""
         session['CustomerId'] = ""
+        session['FirstName'] = ""
+        session['LastName'] = ""
+        session['Profilepath'] = ""
+        session['email'].pop()
+        session['CustomerId'].pop()
+        session['FirstName'].pop()
+        session['LastName'].pop()
+        session['Profilepath'].pop()
         session.clear()  
         return redirect('/')
     except Exception as e:

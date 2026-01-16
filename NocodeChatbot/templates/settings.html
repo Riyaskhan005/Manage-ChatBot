@@ -1,0 +1,370 @@
+{% extends "base.html" %}{% block title %}JTT | Settings{% endblock %}{% block body %}
+                    <div class="row mt-5">
+                        <div class="col-xxl-3">
+                            <div class="card mt-n5">
+                                <div class="card-body p-4">
+                                    <div class="text-center">
+                                        <div class="profile-user position-relative d-inline-block mx-auto  mb-4">
+                                            <img src="{{ url_for('static', filename=session['Profilepath']) if session['Profilepath'] else url_for('static', filename='images/users/default.jpg') }}" class="rounded-circle avatar-xl img-thumbnail user-profile-image" alt="user-profile-image">
+                                            <div class="avatar-xs p-0 rounded-circle profile-photo-edit">
+                                                <input id="profile-img-file-input" type="file" class="profile-img-file-input" onchange="ChangeProfile()">
+                                                <label for="profile-img-file-input" class="profile-photo-edit avatar-xs">
+                                                    <span class="avatar-title rounded-circle bg-light text-body">
+                                                        <i class="ri-camera-fill"></i>
+                                                    </span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <h5 class="fs-16 mb-1">{{session['first_Name']}} {{session['last_Name']}}</h5>
+                                        <p class="text-muted mb-0">Admin</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--end card-->
+                        </div>
+                        <!--end col-->
+                        <div class="col-xxl-9">
+                            <div class="card mt-xxl-n5">
+                                <div class="card-header">
+                                    <ul class="nav nav-tabs-custom rounded card-header-tabs border-bottom-0" role="tablist">
+                                        <li class="nav-item">
+                                            <a class="nav-link active" data-bs-toggle="tab" href="#personalDetails" role="tab">
+                                                <i class="fas fa-home"></i>
+                                                Personal Details
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" data-bs-toggle="tab" href="#changePassword" role="tab">
+                                                <i class="far fa-user"></i>
+                                                Change Password
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="card-body p-4">
+                                    <div class="tab-content">
+                                        <div class="tab-pane active" id="personalDetails" role="tabpanel">
+                                            <form action="javascript:void(0);">
+                                                <div class="row">
+                                                    <div class="col-lg-6">
+                                                        <div class="mb-3">
+                                                            <label for="firstnameInput" class="form-label">First
+                                                                Name</label>
+                                                            <input type="text" class="form-control" id="firstnameInput" placeholder="Enter your firstname" value="">
+                                                        </div>
+                                                    </div>
+                                                    <!--end col-->
+                                                    <div class="col-lg-6">
+                                                        <div class="mb-3">
+                                                            <label for="lastnameInput" class="form-label">Last
+                                                                Name</label>
+                                                            <input type="text" class="form-control" id="lastnameInput" placeholder="Enter your lastname" value="">
+                                                        </div>
+                                                    </div>
+                                                    <!--end col-->
+                                                   <div class="col-lg-6">
+                                                        <div class="mb-3">
+                                                            <label for="phonenumberSelect" class="form-label">Contact</label>
+                                                            <input type="text" id="phonenumberSelect" class="form-control" placeholder="Enter your mobile number">
+                                                        </div>
+                                                    </div>
+                                                    <!--end col-->
+                                                    <div class="col-lg-6">
+                                                        <div class="mb-3">
+                                                            <label for="emailInput" class="form-label">Email
+                                                                Address</label>
+                                                            <input type="email" class="form-control" id="emailInput" placeholder="Enter your email" value="" disabled>
+                                                        </div>
+                                                    </div>
+                                                    <!--end col-->
+                                                    <div class="col-lg-12">
+                                                        <div class="mb-3">
+                                                            <label for="companyName" class="form-label">Company Name</label>
+                                                            <input type="text" class="form-control" id="companyName" placeholder="Enter your company name" value="" disabled>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-12">
+                                                        <div class="mb-3">
+                                                            <label for="Notes" class="form-label">Notes</label>
+                                                            <textarea class="form-control" id="Notes" rows="3" placeholder="Enter your notes"></textarea>
+                                                        </div>
+                                                    </div>
+                                                    <!--end col-->
+                                                    <div class="col-lg-12">
+                                                        <div class="hstack gap-2 justify-content-end">
+                                                            <button type="submit" class="btn btn-primary" onclick="ProfileDetailsUpdate()">Update</button>
+                                                        </div>
+                                                    </div>
+                                                    <!--end col-->
+                                                </div>
+                                                <!--end row-->
+                                            </form>
+                                        </div>
+                                        <!--end tab-pane-->
+                                        <div class="tab-pane" id="changePassword" role="tabpanel">
+                                                <div class="row g-2">
+                                                    <div class="col-lg-4">
+                                                        <div>
+                                                            <label for="oldpasswordInput" class="form-label">Old
+                                                                Password</label>
+                                                            <input type="password" class="form-control" id="oldpasswordInput" placeholder="Enter current password">
+                                                             <button class="btn btn-link position-absolute end-0 text-decoration-none text-muted password-addon" style="bottom: 15px;"
+                                                                    type="button" data-target="oldpasswordInput">
+                                                                <i class="ri-eye-fill align-middle"></i>
+                                                            </button> 
+                                                        </div>
+                                                    </div>
+                                                    <!--end col-->
+                                                    <div class="col-lg-4">
+                                                        <div>
+                                                            <label for="newpasswordInput" class="form-label">New
+                                                                Password</label>
+                                                            <div class="position-relative auth-pass-inputgroup">
+                                                                <input type="password" class="form-control password-input" id="password-input" placeholder="Enter new password">
+                                                                    <button class="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted password-addon"
+                                                                            type="button" data-target="password-input">
+                                                                        <i class="ri-eye-fill align-middle"></i>
+                                                                    </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!--end col-->
+                                                    <div class="col-lg-4">
+                                                        <div>
+                                                            <label for="confirm-password-input" class="form-label">Confirm
+                                                            Password</label>
+                                                            <div class="position-relative auth-pass-inputgroup mb-3">
+                                                                <input type="password" class="form-control" id="confirm-password-input" placeholder="Confirm password">
+                                                                 <button class="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted password-addon"
+                                                                        type="button" data-target="confirm-password-input">
+                                                                    <i class="ri-eye-fill align-middle"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-4">
+                                                        <div id="password-contain" class="p-3 bg-light mb-2 rounded">
+                                                            <h5 class="fs-13">Password must contain:</h5>
+                                                            <p id="pass-length" class="invalid fs-12 mb-2">Minimum <b>8 characters</b></p>
+                                                            <p id="pass-lower" class="invalid fs-12 mb-2">At <b>lowercase</b> letter (a-z)</p>
+                                                            <p id="pass-upper" class="invalid fs-12 mb-2">At least <b>uppercase</b> letter (A-Z)</p>
+                                                            <p id="pass-number" class="invalid fs-12 mb-0">At least <b>number</b> (0-9)</p>
+                                                            <p id="pass-special" class="invalid fs-12 mb-0">At least <b>special character</b> (!@#$%^&*(),.?":{}|<> )</p>
+                                                        </div>
+                                                    </div>
+                                                    <!--end col-->
+                                                    <div class="col-lg-12">
+                                                        <div class="text-end">
+                                                            <button type="submit" class="btn btn-primary" onclick="ChangePassword()">Change
+                                                                Password</button>
+                                                        </div>
+                                                    </div>
+                                                    <!--end col-->
+                                                </div>
+                                                <!--end row-->
+                                        </div>
+                                        <!--end tab-pane-->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--end col-->
+                    </div>
+                    <!--end row-->
+
+<script>
+    $("#page_title").text("Settings");
+    $(document).on("click", ".password-addon", function () {
+        let inputId = $(this).data("target");
+        let input = $("#" + inputId);
+        let icon = $(this).find("i");
+
+        if (input.attr("type") === "password") {
+            input.attr("type", "text");
+            icon.removeClass("ri-eye-fill").addClass("ri-eye-off-fill");
+        } else {
+            input.attr("type", "password");
+            icon.removeClass("ri-eye-off-fill").addClass("ri-eye-fill");
+        }
+    });
+    $(document).ready(function() {
+       onloadProfiledetails();
+    });
+    function ProfileDetailsUpdate(){
+        var firstnameInput = $('#firstnameInput').val();
+        var lastnameInput = $('#lastnameInput').val();
+        var emailInput = $('#emailInput').val();
+        var phonenumbers = $('#phonenumberSelect').val();
+        var CompanyName = $('#companyName').val();
+        var Notes = $('#Notes').val();
+
+        if(!firstnameInput){
+            nocodealert("Please enter first name.", 'warning', 1500);
+
+        }else if(!lastnameInput){
+            nocodealert("Please enter last name.", 'warning', 1500);
+
+        }else if(!emailInput){
+            nocodealert("Please enter email.", 'warning', 1500);
+
+        } else if(!phonenumbers || phonenumbers.length === 0){
+        nocodealert("Please enter contact number.", 'warning', 1500);
+        }
+        else if (!CompanyName){
+            nocodealert("Please enter company name.", 'warning', 1500);
+
+        }
+        else{
+            
+            $.ajax({
+                url: '/settings/ProfileDetailsUpdate',
+                type: 'POST',
+                data: { 
+                    firstnameInput: firstnameInput,
+                    lastnameInput: lastnameInput,
+                    emailInput: emailInput,
+                    phonenumberInput: phonenumbers,
+                    Company_Name: CompanyName,
+                    Notes: Notes
+                },
+                success: function (data) {
+                    if (data["error_code"] == 0) {
+                        nocodealert(data["msg"], 'success', 1500);
+                        $('#user-name').text(firstnameInput + " " + lastnameInput);
+                        $('#dropdown-header').text("Welcome " + firstnameInput + "!");
+                        onloadProfiledetails();
+
+                    } else {
+                        nocodealert(data["msg"], 'error', 1500);
+
+                    }
+                },
+                error: function () {
+                    nocodealert("An error occurred. Please try again.", 'error', 1500);
+                }
+            });
+        }
+    }
+    function onloadProfiledetails(){
+        
+        $.ajax({
+            url: '/settings/getProfileDetails',
+            type: 'GET',
+            success: function (data) {
+                if (data["error_code"] == 0) {
+                    $('#firstnameInput').val(data["firstname"]);
+                    $('#lastnameInput').val(data["lastname"]);
+                    $('#emailInput').val(data["email"]);
+                    $('#phonenumberSelect').val(data["contact"]);
+                    $('#companyName').val(data["company_name"]);
+                    $('#Notes').val(data["notes"]);
+                } else {
+                    nocodealert(data["msg"], 'error', 1500);
+                }
+            },
+            error: function () {
+                nocodealert("An error occurred. Please try again.", 'error', 1500)
+            }
+        });
+    }
+    function ChangePassword(){
+        var oldpasswordInput = $('#oldpasswordInput').val();
+        var newpasswordInput = $('#password-input').val();
+        var confirmpasswordInput = $('#confirm-password-input').val();
+
+        if(!oldpasswordInput){
+            nocodealert("Please enter old password.", 'warning', 1500);
+
+        }else if(!newpasswordInput){
+            nocodealert("Please enter new password.", 'warning', 1500);
+
+        }else if(!confirmpasswordInput){
+            nocodealert("Please enter confirm password.", 'warning', 1500);
+   
+        }else if(newpasswordInput != confirmpasswordInput){
+            nocodealert("New password and confirm password do not match.", 'warning', 1500);
+
+        }else{
+            let messages = [];
+
+            if (newpasswordInput.length < 8) {
+                messages.push("Password must be at least 8 characters long.");
+            }
+            if (!/[a-z]/.test(newpasswordInput)) {
+                messages.push("Include at least one lowercase letter.");
+            }
+            if (!/[A-Z]/.test(newpasswordInput)) {
+                messages.push("Include at least one uppercase letter.");
+            }
+            if (!/[0-9]/.test(newpasswordInput)) {
+                messages.push("Include at least one number.");
+            }
+            if (!/[!@#$%^&*(),.?\":{}|<>]/.test(newpasswordInput)) {
+                messages.push("Include at least one special character.");
+            }
+
+            if (messages.length > 0) {
+                nocodealert(messages.join("\n"), 'warning', 4000);
+                return;
+            }
+            
+            $.ajax({
+                url: '/settings/ChangePassword',
+                type: 'POST',
+                data: { 
+                    oldpasswordInput: oldpasswordInput,
+                    newpasswordInput: newpasswordInput
+                },
+                success: function (data) {
+                    if (data["error_code"] == 0) {
+                        nocodealert(data["msg"], 'success', 1500);
+                        $('#oldpasswordInput').val('');
+                        $('#password-input').val('');
+                        $('#confirm-password-input').val('');
+
+                    } else {
+                        nocodealert(data["msg"], 'error', 1500);
+
+                    }
+                },
+                error: function () {
+                    nocodealert("An error occurred. Please try again.", 'error', 1500);
+                }
+            });
+        }
+    }
+function ChangeProfile() {
+    var fileInput = document.getElementById('profile-img-file-input');
+    var file = fileInput.files[0];
+    if (file) {
+        var formData = new FormData();
+        formData.append('profileImage', file);
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            $('.user-profile-image, .header-profile-user').attr('src', e.target.result);
+        }
+        reader.readAsDataURL(file);
+        
+
+        $.ajax({
+            url: '/settings/ChangeProfile',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (data) {
+                if (data["error_code"] == 0) {
+                    nocodealert(data["msg"], 'success', 1500);
+                } else {
+                    nocodealert(data["msg"], 'error', 1500);
+                }
+            },
+            error: function () {
+                nocodealert("An error occurred. Please try again.", 'error', 1500)
+            }
+        });
+    }
+}
+</script>
+{% endblock %}
+                

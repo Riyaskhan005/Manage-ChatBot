@@ -26,6 +26,9 @@ def create_app(config_class=Config):
     from NocodeChatbot.dashboard import bp as dashboard_bp
     app.register_blueprint(dashboard_bp, url_prefix='/home')
 
+    from NocodeChatbot.settings import bp as settings_bp
+    app.register_blueprint(settings_bp, url_prefix='/settings')
+
     from NocodeChatbot.manageprojects import bp as projects_bp
     app.register_blueprint(projects_bp, url_prefix='/projects')
 

@@ -1,113 +1,140 @@
 {% extends "auth_base.html" %}
 {% block base_auth %}
-<div class="col-md-8 col-lg-6 col-xl-5">
+                    <div class="col-md-8 col-lg-6 col-xl-5">
     <div class="card mt-4 card-bg-fill">
 
-        <div class="card-body p-4">
-            <div class="text-center mt-2">
-                <h5 class="text-primary">Welcome Back !</h5>
+                            <div class="card-body p-4">
+                                <div class="text-center mt-2">
+                                    <h5 class="text-primary">Welcome Back !</h5>
                 <p class="text-muted">Sign in to continue ChatBot Panel.</p>
-            </div>
-            <div class="p-2 mt-4">
-                <div class="mb-3">
-                    <label for="email" class="form-label">Email</label>
-                    <input type="text" class="form-control" id="email" placeholder="Enter email">
-                </div>
+                                </div>
+                                <div class="p-2 mt-4">
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">Email</label>
+                                        <input type="text" class="form-control" id="email" placeholder="Enter email">
+                                    </div>
 
-                <div class="mb-3">
-                    <div class="float-end">
-                        <a href="auth-pass-reset-basic.html" class="text-muted">Forgot password?</a>
-                    </div>
-                    <label class="form-label" for="password-input">Password</label>
-                    <div class="position-relative auth-pass-inputgroup mb-3">
-                        <input type="password" class="form-control pe-5 password-input" placeholder="Enter password" id="password-input">
-                        <button class="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted password-addon" type="button" id="password-addon"><i class="ri-eye-fill align-middle"></i></button>
-                    </div>
-                </div>
+                                    <div class="mb-3">
+                                        <div class="float-end">
+                                            <a href="/forgetpassword" class="text-muted">Forgot password?</a>
+                                        </div>
+                                        <label class="form-label" for="password-input">Password</label>
+                                        <div class="position-relative auth-pass-inputgroup mb-3">
+                                            <input type="password" class="form-control pe-5 password-input" placeholder="Enter password" id="password-input">
+                                            <button class="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted password-addon" type="button" id="password-addon"><i class="ri-eye-fill align-middle"></i></button>
+                                        </div>
+                                    </div>
 
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="auth-remember-check">
-                    <label class="form-check-label" for="auth-remember-check">Remember me</label>
-                </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="auth-remember-check">
+                                        <label class="form-check-label" for="auth-remember-check">Remember me</label>
+                                    </div>
 
-                <div class="mt-4">
+                                    <div class="mt-4">
                     <button class="btn btn-primary w-100" type="submit" onclick="login()">Sign In</button>
-                </div>
-            </div>
-        </div>
-        <!-- end card body -->
-    </div>
-    <!-- end card -->
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- end card body -->
+                        </div>
+                        <!-- end card -->
 
     <!-- <div class="mt-4 text-center">
         <p class="mb-0">Don't have an account ? <a href="auth-signup-basic.html" class="fw-semibold text-primary text-decoration-underline"> Signup </a> </p>
     </div> -->
 
-</div>
+        </div>
 <script>
-    function login() {
-        var email = $('#email').val().trim();
-        var password = $('#password-input').val().trim();
-        var remember = $('#auth-remember-check').is(':checked');
+        $(document).ready(function() {
+            $('#password-addon').on('click', function() {
+                var $passwordInput = $('#password-input');
+                var $icon = $(this).find('i');
 
-        if (!email) {
+                if ($passwordInput.attr('type') === 'password') {
+                    $passwordInput.attr('type', 'text');
+                    $icon.removeClass('ri-eye-fill').addClass('ri-eye-off-fill');
+                } else {
+                    $passwordInput.attr('type', 'password');
+                    $icon.removeClass('ri-eye-off-fill').addClass('ri-eye-fill');
+                }
+            });
+            function getCookie(name) {
+                const value = "; " + document.cookie;
+                const parts = value.split("; " + name + "=");
+                if (parts.length === 2) return decodeURIComponent(parts.pop().split(";").shift());
+                return null;
+            }
+
+            var savedEmail = getCookie("login_email");
+            var savedPassword = getCookie("login_password");
+
+            if (savedEmail) $('#email').val(savedEmail);
+            if (savedPassword) $('#password-input').val(savedPassword);
+            if (savedEmail || savedPassword) $('#auth-remember-check').prop('checked', true);
+        });
+        function login() {
+            var email = $('#email').val().trim();
+            var password = $('#password-input').val().trim();
+            var remember = $('#auth-remember-check').is(':checked');
+
+            if (!email) {
             nocodealert("Please enter email.", 'warning', 1500);
-            return;
-        }
-        if (!password) {
+                return;
+            }
+            if (!password) {
             nocodealert("Please enter password.", 'warning', 1500);
-            return;
-        }
+                return;
+            }
 
-        $.ajax({
+            $.ajax({
             url: '/login',
-            type: 'POST',
-            data: { 
-                email: email,
-                password: password
-            },
-            success: function(response) {
-                var data = JSON.parse(response);
-                if (data["error_code"] === 0) {
+                type: 'POST',
+                data: { 
+                    email: email,
+                    password: password
+                },
+                success: function(response) {
+                    var data = JSON.parse(response);
+                    if (data["error_code"] === 0) {
                     nocodeCenterAlert(data["msg"], 'success', 1500, function () {
-                        if (remember) {
-                            setCookie("login_email", email, 30);
-                            setCookie("login_password", password, 30);
-                        } else {
-                            deleteCookie("login_email");
-                            deleteCookie("login_password");
-                        }
+                            if (remember) {
+                                setCookie("login_email", email, 30);
+                                setCookie("login_password", password, 30);
+                            } else {
+                                deleteCookie("login_email");
+                                deleteCookie("login_password");
+                            }
 
                         window.location.href = "/home";
-                    });
-                } else {
+                        });
+                    } else {
                     nocodealert(data["msg"], 'error', 1500);
-                }
-            },
-            error: function(xhr) {
+                    }
+                },
+                error: function(xhr) {
                 nocodealert("Unexpected error occurred", 'error', 1500);
+                }
+            });
+        }
+
+        $('#email, #password-input').on('keypress', function(e) {
+            if (e.which === 13) {
+                login();
             }
         });
-    }
-
-    $('#email, #password-input').on('keypress', function(e) {
-        if (e.which === 13) {
-            login();
+        
+        function setCookie(name, value, days) {
+            var expires = "";
+            if (days) {
+                var d = new Date();
+                d.setTime(d.getTime() + (days*24*60*60*1000));
+                expires = "; expires=" + d.toUTCString();
+            }
+            document.cookie = name + "=" + encodeURIComponent(value) + expires + "; path=/";
         }
-    });
 
-function setCookie(name, value, days) {
-    var expires = "";
-    if (days) {
-        var d = new Date();
-        d.setTime(d.getTime() + (days*24*60*60*1000));
-        expires = "; expires=" + d.toUTCString();
-    }
-    document.cookie = name + "=" + encodeURIComponent(value) + expires + "; path=/";
-}
-
-function deleteCookie(name) {
-    document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-}
-</script>
+        function deleteCookie(name) {
+            document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        }
+         </script>
 {% endblock %}
