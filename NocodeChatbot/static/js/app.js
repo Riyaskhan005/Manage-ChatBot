@@ -17,31 +17,31 @@
     document.getElementById("header-lang-img") &&
       ("en" == e
         ? (document.getElementById("header-lang-img").src =
-            "assets/images/flags/us.svg")
+            "../static/images/flags/us.svg")
         : "sp" == e
         ? (document.getElementById("header-lang-img").src =
-            "assets/images/flags/spain.svg")
+            "../static/images/flags/spain.svg")
         : "gr" == e
         ? (document.getElementById("header-lang-img").src =
-            "assets/images/flags/germany.svg")
+            "../static/images/flags/germany.svg")
         : "it" == e
         ? (document.getElementById("header-lang-img").src =
-            "assets/images/flags/italy.svg")
+            "../static/images/flags/italy.svg")
         : "ru" == e
         ? (document.getElementById("header-lang-img").src =
-            "assets/images/flags/russia.svg")
+            "../static/images/flags/russia.svg")
         : "ch" == e
         ? (document.getElementById("header-lang-img").src =
-            "assets/images/flags/china.svg")
+            "../static/images/flags/china.svg")
         : "fr" == e
         ? (document.getElementById("header-lang-img").src =
-            "assets/images/flags/french.svg")
+            "../static/images/flags/french.svg")
         : "ar" == e &&
           (document.getElementById("header-lang-img").src =
-            "assets/images/flags/ae.svg"),
+            "../static/images/flags/ae.svg"),
       localStorage.setItem("language", e),
       null == (a = localStorage.getItem("language")) && n(t),
-      (e = new XMLHttpRequest()).open("GET", "assets/lang/" + a + ".json"),
+      (e = new XMLHttpRequest()).open("GET", "../static/lang/" + a + ".json"),
       (e.onreadystatechange = function () {
         var a;
         4 === this.readyState &&
@@ -111,7 +111,7 @@
       (document.querySelector(".navbar-menu") &&
         (document.querySelector(".navbar-menu").innerHTML = d),
       ((n = document.createElement("ul")).innerHTML =
-        '<a href="#" class="logo"><img src="assets/images/logo-sm.png" alt="" height="22"></a>'),
+        '<a href="#" class="logo"><img src="../static/images/logo-sm.png" alt="" height="22"></a>'),
       Array.from(
         document.getElementById("navbar-nav").querySelectorAll(".menu-link")
       ).forEach(function (e) {
@@ -1406,7 +1406,7 @@
             (e.querySelector(".view-all").style.display = "none"),
           e.querySelector(".empty-notification-elem") ||
             (e.innerHTML +=
-              '<div class="empty-notification-elem">\t\t\t\t\t\t\t<div class="w-25 w-sm-50 pt-3 mx-auto">\t\t\t\t\t\t\t\t<img src="assets/images/svg/bell.svg" class="img-fluid" alt="user-pic">\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t<div class="text-center pb-5 mt-2">\t\t\t\t\t\t\t\t<h6 class="fs-18 fw-semibold lh-base">Hey! You have no any notifications </h6>\t\t\t\t\t\t\t</div>\t\t\t\t\t\t</div>'));
+              '<div class="empty-notification-elem">\t\t\t\t\t\t\t<div class="w-25 w-sm-50 pt-3 mx-auto">\t\t\t\t\t\t\t\t<img src="../static/images/svg/bell.svg" class="img-fluid" alt="user-pic">\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t<div class="text-center pb-5 mt-2">\t\t\t\t\t\t\t\t<h6 class="fs-18 fw-semibold lh-base">Hey! You have no any notifications </h6>\t\t\t\t\t\t\t</div>\t\t\t\t\t\t</div>'));
     });
   }
   function W() {
@@ -1547,14 +1547,22 @@
     document.addEventListener("mozfullscreenchange", N),
     (B = document.getElementsByTagName("HTML")[0]),
     (z = document.querySelectorAll(".light-dark-mode")) &&
-      z.length &&
-      z[0].addEventListener("click", function (e) {
-        B.hasAttribute("data-bs-theme") &&
-        "dark" == B.getAttribute("data-bs-theme")
-          ? C("data-bs-theme", "light", "layout-mode-light", B)
-          : C("data-bs-theme", "dark", "layout-mode-dark", B),
-          window.dispatchEvent(x);
-      }),
+  z.length &&
+  z[0].addEventListener("click", function (e) {
+    let current = B.getAttribute("data-bs-theme");
+    let newValue = current === "dark" ? "light" : "dark";
+    B.setAttribute("data-bs-theme", newValue);
+    sessionStorage.setItem("data-bs-theme", newValue);
+    let icon = z[0].querySelector("i");
+    if (newValue === "dark") {
+      icon.classList.remove("bx-moon");
+      icon.classList.add("bx-sun");
+    } else {
+      icon.classList.remove("bx-sun");
+      icon.classList.add("bx-moon");
+    }
+    window.dispatchEvent(x);
+  }),
     G(),
     D(),
     r(),
