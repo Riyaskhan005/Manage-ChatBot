@@ -53,3 +53,45 @@
 .theme-bg {
     background: #4b38b3;
 }
+/* ===== Floating Wave Button ===== */
+#chat-wave-btn {
+    position: fixed;
+    right: 30px;
+    bottom: 80px;
+    width: 58px;
+    height: 58px;
+    z-index: 1100;
+}
+
+#chat-wave-btn button {
+    width: 58px;
+    height: 58px;
+    font-size: 22px;
+    position: relative;
+    z-index: 2;
+}
+
+/* Wave animation */
+.wave-ring {
+    position: absolute;
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: rgba(75, 56, 179, 0.35);
+    animation: wavePulse 1.8s infinite;
+}
+
+.wave-ring.delay {
+    animation-delay: 0.6s;
+}
+
+@keyframes wavePulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.6;
+    }
+    100% {
+        transform: scale(2.3);
+        opacity: 0;
+    }
+}

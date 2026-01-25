@@ -1,0 +1,89 @@
+{% extends "base.html" %} {% block title %}ChatBot{% endblock %}
+{% block body %}
+<link href="../static/css/chatbot.css" rel="stylesheet" type="text/css" />
+<div id="chat-wave-btn">
+    <span class="wave-ring"></span>
+    <span class="wave-ring delay"></span>
+    <button id="chat-toggle" class="btn btn-primary rounded-circle shadow">
+        💬
+    </button>
+</div>
+
+<!-- ===== Chatbot Popup Wrapper (NEW) ===== -->
+<div id="chatbotPopup"
+     style="position:fixed;
+            right:20px;
+            bottom:80px;
+            width:360px;
+            height:550px;
+            display:none;
+            z-index:1050;">
+
+    <!-- ===== YOUR EXISTING UI (UNCHANGED) ===== -->
+    <div id="chatbotPreview" class="shadow-sm"
+        style="border-radius:14px;height:100%;display:flex;flex-direction:column;background:#f4f6fb;">
+
+        <div id="chatbotPreviewHeader"
+            style="padding:12px 14px;
+                   background:#4b38b3;
+                   color:#fff;
+                   font-weight:600;
+                   border-top-left-radius:14px;
+                   border-top-right-radius:14px;
+                   display:flex;
+                   justify-content:space-between;
+                   align-items:center;">
+            Demo Chatbot
+            <span id="close-chat" style="cursor:pointer;">✕</span>
+        </div>
+
+        <div id="chatMessages" style="flex:1;padding:12px;overflow-y:auto;">
+
+            <div class="bot-msg-wrap">
+                <div class="bot-msg theme-border">
+                    👋 Hi! I am <b>Demo Chatbot</b>. How can I help you today?
+                </div>
+            </div>
+
+        </div>
+
+        <div class="chat-input-preview">
+            <input id="chat-input"
+                   class="form-control border-0"
+                   placeholder="Type your message…" />
+            <span class="send-btn theme-bg" onclick="sendMessage()">➤</span>
+        </div>
+
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    const $waveContainer = $("#chat-wave-btn"); // hide the whole container
+    const $popup = $("#chatbotPopup");
+    const $closeBtn = $("#close-chat");
+
+    // Open chat
+    $("#chat-toggle").on("click", function() {
+        $popup.show();           // show chat window
+        $waveContainer.hide();   // hide button + waves
+    });
+
+    // Close chat
+    $closeBtn.on("click", function() {
+        $popup.hide();           // hide chat window
+        $waveContainer.show();   // show button + waves
+    });
+
+    // Optional: click outside chat closes it
+    $(document).on("click", function(e) {
+        if (!$(e.target).closest("#chatbotPopup, #chat-wave-btn").length) {
+            $popup.hide();
+            $waveContainer.show();
+        }
+    });
+});
+</script>
+
+
+{% endblock %}

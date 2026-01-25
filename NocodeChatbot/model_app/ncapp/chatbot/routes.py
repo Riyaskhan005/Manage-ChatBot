@@ -7,4 +7,4 @@ log_writer_ = LogWriter()
 
 @bp.route('/')
 def index():
-    return render_template("chatbot.html")
+    return render_template("chat.html")

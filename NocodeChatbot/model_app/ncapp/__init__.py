@@ -13,6 +13,6 @@ def create_app(config_class=Config):
     JWTManager(app)
 
     from ncapp.chatbot import bp as chatbot_bp
-    app.register_blueprint(chatbot_bp, url_prefix='/chatbot')
+    app.register_blueprint(chatbot_bp, url_prefix='/')
 
     return app
