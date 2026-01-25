@@ -1,0 +1,234 @@
+:root {
+  --node-title-color: #111;
+  --node-text-color: #555;
+  --node-bg: #ffffff;
+  --connector-color: #999;
+}
+
+[data-theme="dark"] {
+  --node-title-color: #f5f5f5;
+  --node-text-color: #bdbdbd;
+  --node-bg: #1e1e1e;
+   --connector-color: #ccc;
+}
+
+.dotted-panel { 
+  display: block;
+  background: transparent;
+  padding: 40px;
+  position: relative;
+  border-radius: 10px;
+  height: 390px;
+  border: 2px solid #ccc; 
+  background-image: radial-gradient(#ccc 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+.flow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.node {
+  width: 220px;
+  height: 90px; 
+  border-radius: 10px;
+  padding: 20px 25px;
+  min-width: 180px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  background: var(--node-bg);
+  position: relative; 
+}
+.node::before,
+.node::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  background: var(--connector-color);
+  border-radius: 50%;
+  transform: translateY(-50%);
+}
+
+/* left dot */
+.node::before {
+  left: -6px;
+}
+
+/* right dot */
+.node::after {
+  right: -6px;
+}
+
+/* first node doesn’t need left dot */
+.node:first-child::before {
+  display: none;
+}
+
+/* last node doesn’t need right dot */
+.node:last-child::after {
+  display: none;
+}
+.node h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  color: var(--node-title-color);
+}
+
+.node a {
+  margin: 0;
+  font-size: 13px;
+  color: var(--node-text-color);
+}
+
+.arrow {
+  font-size: 28px;
+  color: #999;
+  margin: 0 10px;
+}
+
+.node.action {
+  padding: 20px;
+}
+
+.node.action button {
+  padding: 12px 26px;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 15px;
+}
+:root {
+  --connector-color: #999;
+}
+
+[data-theme="dark"] {
+  --connector-color: #ccc;
+}
+
+/* Fixed area inside node so height never jumps */
+.node .node-content {
+  height: 48px;             
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.extractor-connector {
+  flex: 1;
+  height: 2px;
+  margin: 0 10px;
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--connector-color) 0 6px,
+    transparent 6px 12px
+  );
+  animation: dash-move 1.5s linear infinite;
+}
+
+.chatbot-connector {
+  flex: 1;
+  height: 2px;
+  margin: 0 10px;
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--connector-color) 0 6px,
+    transparent 6px 12px
+  );
+  animation: dash-move 1.5s linear infinite;
+}
+
+@keyframes dash-move {
+  to {
+    background-position: 24px 0;
+  }
+}
+.selected-data {
+  border: 1px solid var(--vz-light);
+  border-radius: 8px;
+  background: var(--vz-primary);
+  padding: 6px 8px;
+}
+
+.selected-data span {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  color: #fff; /* ✅ white text */
+  font-size: 13px;
+}
+.selected-data button {
+  padding: 2px 6px;     /* ✅ reduced padding */
+  line-height: 1;
+  border-color: #fff;
+}
+
+.selected-data button i {
+  font-size: 14px;
+  color: #fff;
+}
+/* Green glow for Data Extractor node */
+.node.with-dots.active {
+  border: 2px solid var(--vz-success);
+  box-shadow: 0 0 15px rgba(25, 135, 84, 0.6);
+  transition: all 0.3s ease;
+}
+.node.with-dots.active::after {
+  background-color: var(--vz-success);
+}
+
+/* Green connector after Data Extractor */
+.extractor-connector.active {
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--vz-success) 0 6px,
+    transparent 6px 12px
+  );
+  animation: dash-move 1.5s linear infinite;
+}
+
+/* Chatbot node active */
+.chatbot-node.active {
+  border: 2px solid var(--vz-success);
+  box-shadow: 0 0 15px rgba(25, 135, 84, 0.6);
+  transition: all 0.3s ease;
+}
+
+/* Chatbot dots */
+.chatbot-node.active::after {
+  background-color: var(--vz-success);
+}
+
+/* Connector before Chatbot */
+.chatbot-connector.active {
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--vz-success) 0 6px,
+    transparent 6px 12px
+  );
+  animation: dash-move 1.5s linear infinite;
+}
+
+/* Left dot of Chatbot stays default gray if no extractor */
+.chatbot-node.active::before {
+  background-color: var(--vz-gray-300); /* keeps left dot unglowed */
+}
+/* Default dot color */
+.node.with-dots::before,
+.chatbot-node::before,
+.node.action::before {
+  background-color: #ccc;
+}
+
+/* Green dot when previous node is active */
+.node.with-dots.prev-active::before,
+.chatbot-node.prev-active::before,
+.node.action.prev-active::before {
+  background-color: var(--vz-success);
+  transition: background-color 0.3s ease;
+}
