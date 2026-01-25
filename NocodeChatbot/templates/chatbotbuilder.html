@@ -131,6 +131,14 @@
 
 <script>
 let chatbotTable;
+
+let builderJson = [
+    {
+        dataextractor: null,
+        chatbot: null
+    }
+];
+
 $("#page-title").text("ChatBot Builder");
 $(document).ready(function () {
     getProjects();
@@ -165,6 +173,7 @@ function getProjects() {
 }
 
 function viewDetails() {
+    resetBuilderUI();
     var projectId = $("#project").val();
     if (!projectId) {
         nocodealert("Please select a project.", "warning");
@@ -172,13 +181,15 @@ function viewDetails() {
     }
     loadChatbots(projectId);
     loadBuilder(projectId);
+    loadBuilderFlow(projectId);
 }
 function loadBuilder(projectId) {
     $("#builderContainer").show();
    
 }
 function onChangeProjects() {
-   $("#builderContainer").hide();
+    $("#builderContainer").hide();
+    resetBuilderUI(); 
 }
 function loadDataExtractors() {
   $.ajax({
@@ -288,6 +299,11 @@ function addExtractor() {
     $("#selectedExtractor").removeClass("d-none");
     $("#addExtractorLink").hide();
     $("#extractDataModal").modal("hide");
+    builderJson[0].dataextractor = {
+        id: selectedExtractorId,
+        name: name
+    };
+    saveBuilderFlow();
     const node = $(".node.with-dots").first();
     node.addClass("active");
     $(".extractor-connector").addClass("active");
@@ -296,6 +312,8 @@ function addExtractor() {
 
 function removeExtractor() {
     selectedExtractorId = null;
+    builderJson[0].dataextractor = null;
+    saveBuilderFlow();
     $("#selectedExtractor").addClass("d-none");
     $("#selectedExtractorName").text("");
     $("#addExtractorLink").show();
@@ -319,6 +337,11 @@ function addChatbot() {
     $("#selectedChatbot").removeClass("d-none");
     $("#addChatbotLink").hide();
     $("#chatBotModal").modal("hide");
+    builderJson[0].chatbot = {
+        id: selectedChatbotId,
+        name: name
+    };
+    saveBuilderFlow();
     const node = $(".chatbot-node");
     node.addClass("active");
     $(".chatbot-connector").addClass("active");
@@ -327,6 +350,8 @@ function addChatbot() {
 
 function removeChatbot() {
     selectedChatbotId = null;
+    builderJson[0].chatbot = null;
+    saveBuilderFlow();
     $("#selectedChatbot").addClass("d-none");
     $("#selectedChatbotName").text("");
     $("#addChatbotLink").show();
@@ -336,6 +361,93 @@ function removeChatbot() {
     $(".chatbot-connector").removeClass("active");
     $(".node.action").removeClass("prev-active");
 }
+function saveBuilderFlow() {
+    const projectId = $("#project").val();
+    if (!projectId) return;
+
+    $.ajax({
+        url: "/chatbotbuilder/save_builder_flow",
+        type: "POST",
+        data: {
+            project_id: projectId,
+            builder_flow_json: JSON.stringify(builderJson)
+        },
+        success: function (res) {
+            if (res.error_code !== 0) {
+                nocodealert(res.msg || "Failed to save builder flow", "error");
+            }
+        },
+        error: function () {
+            nocodealert("Builder auto-save failed", "error");
+        }
+    });
+}
+function loadBuilderFlow(projectId) {
+    $.ajax({
+        url: "/chatbotbuilder/get_builder_flow",
+        type: "POST",
+        data: { project_id: projectId },
+        success: function (res) {
+            if (res.error_code !== 0) {
+                nocodealert(res.msg || "Failed to load builder flow", "error");
+                return;
+            }
+
+            if (!res.builder_flow_json) {
+                $("#builderContainer").show();
+                return;
+            }
+
+            builderJson = JSON.parse(res.builder_flow_json);
+
+            applyBuilderFlow(builderJson[0]);
+
+            $("#builderContainer").show();
+        }
+    });
+}
+function applyBuilderFlow(flow) {
+    // 🔹 Data Extractor
+    if (flow.dataextractor) {
+        selectedExtractorId = flow.dataextractor.id;
+        $("#selectedExtractorName").text(flow.dataextractor.name);
+        $("#selectedExtractor").removeClass("d-none");
+        $("#addExtractorLink").hide();
+
+        $(".node.with-dots").first().addClass("active");
+        $(".extractor-connector").addClass("active");
+        $(".chatbot-node").addClass("prev-active");
+    }
+
+    // 🔹 Chatbot
+    if (flow.chatbot) {
+        selectedChatbotId = flow.chatbot.id;
+        $("#selectedChatbotName").text(flow.chatbot.name);
+        $("#selectedChatbot").removeClass("d-none");
+        $("#addChatbotLink").hide();
+
+        $(".chatbot-node").addClass("active");
+        $(".chatbot-connector").addClass("active");
+        $(".node.action").addClass("prev-active");
+    }
+}
+
+function resetBuilderUI() {
+    builderJson = [
+        { dataextractor: null, chatbot: null }
+    ];
+
+    selectedExtractorId = null;
+    selectedChatbotId = null;
+
+    $("#selectedExtractor, #selectedChatbot").addClass("d-none");
+    $("#selectedExtractorName, #selectedChatbotName").text("");
+    $("#addExtractorLink, #addChatbotLink").show();
+
+    $(".node, .extractor-connector, .chatbot-connector")
+        .removeClass("active prev-active");
+}
+
 </script>
 
 {% endblock %}
