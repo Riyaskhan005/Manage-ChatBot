@@ -73,39 +73,39 @@
                         <select class="form-select" id="chatbot_domain" onchange="updatePreview()">
                         <option value="">Select Domain</option>
                         <!-- General -->
-                        <option value="general">General / FAQ</option>
-                        <option value="customer support">Customer Support</option>
+                        <option value="General">General / FAQ</option>
+                        <option value="Customer Support">Customer Support</option>
 
                         <!-- Business -->
-                        <option value="ecommerce">E-Commerce</option>
-                        <option value="sales">Sales & Lead Generation</option>
-                        <option value="marketing">Marketing</option>
-                        <option value="finance">Finance</option>
-                        <option value="real estate">Real Estate</option>
+                        <option value="E-Commerce">E-Commerce</option>
+                        <option value="Sales & Lead Generation">Sales & Lead Generation</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Real Estate">Real Estate</option>
 
                         <!-- Education -->
-                        <option value="education">Education</option>
-                        <option value="edtech">EdTech</option>
-                        <option value="training">Training / LMS</option>
+                        <option value="Education">Education</option>
+                        <option value="EdTech">EdTech</option>
+                        <option value="Training / LMS">Training / LMS</option>
 
                         <!-- Healthcare -->
-                        <option value="health">Healthcare</option>
-                        <option value="fitness">Fitness & Wellness</option>
-                        <option value="mental health">Mental Health</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Fitness & Wellness">Fitness & Wellness</option>
+                        <option value="Mental Health">Mental Health</option>
 
                         <!-- Technology -->
-                        <option value="it support">IT Support</option>
-                        <option value="saas">SaaS Product</option>
-                        <option value="developer">Developer / API Docs</option>
+                        <option value="IT Support">IT Support</option>
+                        <option value="SaaS Product">SaaS Product</option>
+                        <option value="Developer / API Docs">Developer / API Docs</option>
 
                         <!-- Services -->
-                        <option value="travel">Travel & Tourism</option>
-                        <option value="hospitality">Hotel / Restaurant</option>
-                        <option value="logistics">Logistics</option>
+                        <option value="Travel">Travel & Tourism</option>
+                        <option value="Hospitality">Hotel / Restaurant</option>
+                        <option value="Logistics">Logistics</option>
 
                         <!-- Government & Legal -->
-                        <option value="government">Government Services</option>
-                        <option value="legal">Legal</option>
+                        <option value="Government Services">Government Services</option>
+                        <option value="Legal">Legal</option>
                         </select>
                     </div>
 
@@ -654,7 +654,7 @@ const languageMessages = {
 };
 
 function updateLanguagePreview() {
-    var lang   = $("#chatbot_language").val() || "en";
+    var lang   = $("#chatbot_language").val() || "English";
     var config = languageMessages[lang];
 
     var name   = $("#chatbot_name").val().trim() || "Demo Chatbot";
