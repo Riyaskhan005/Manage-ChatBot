@@ -8,4 +8,4 @@ application.secret_key = Config.SECRET_KEY
 root_path = os.path.dirname(os.path.abspath(__file__))
 
 if __name__ == "__main__":
-    application.run(debug=True)
+    application.run(port=5555)
