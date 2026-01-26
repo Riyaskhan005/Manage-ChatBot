@@ -6,7 +6,7 @@
 <head>
 
     <meta charset="utf-8" />
-    <title>{% block title %} Velzon - Admin & Dashboard Template {% endblock %}</title>
+    <title>ChatBot</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
     <meta content="Themesbrand" name="author" />
@@ -93,34 +93,6 @@
     </div>
 </div>
 
-<script>
-$(document).ready(function() {
-    const $waveContainer = $("#chat-wave-btn"); // hide the whole container
-    const $popup = $("#chatbotPopup");
-    const $closeBtn = $("#close-chat");
-
-    // Open chat
-    $("#chat-toggle").on("click", function() {
-        $popup.show();           // show chat window
-        $waveContainer.hide();   // hide button + waves
-    });
-
-    // Close chat
-    $closeBtn.on("click", function() {
-        $popup.hide();           // hide chat window
-        $waveContainer.show();   // show button + waves
-    });
-
-    // Optional: click outside chat closes it
-    $(document).on("click", function(e) {
-        if (!$(e.target).closest("#chatbotPopup, #chat-wave-btn").length) {
-            $popup.hide();
-            $waveContainer.show();
-        }
-    });
-});
-</script>
-
 
 <footer class="footer border-top">
                 <div class="container-fluid">
@@ -171,5 +143,105 @@ $(document).ready(function() {
 
     <!-- App js -->
     <script src="../static/js/app.js"></script>
+    <script>
+        $(document).ready(function() {
+    const $waveContainer = $("#chat-wave-btn"); // hide the whole container
+    const $popup = $("#chatbotPopup");
+    const $closeBtn = $("#close-chat");
+
+    // Open chat
+    $("#chat-toggle").on("click", function() {
+        $popup.show();           // show chat window
+        $waveContainer.hide();   // hide button + waves
+    });
+
+    // Close chat
+    $closeBtn.on("click", function() {
+        $popup.hide();           // hide chat window
+        $waveContainer.show();   // show button + waves
+    });
+
+    // Optional: click outside chat closes it
+    $(document).on("click", function(e) {
+        if (!$(e.target).closest("#chatbotPopup, #chat-wave-btn").length) {
+            $popup.hide();
+            $waveContainer.show();
+        }
+    });
+});
+let conversation = [];
+
+function addUserMessage(text) {
+    conversation.push({ role: "user", text: text });
+    $("#chatMessages").append(`
+        <div class="user-msg-wrap">
+            <div class="user-msg theme-bg text-white">
+                ${text}
+            </div>
+        </div>
+    `);
+    scrollChat();
+    saveConversation();
+}
+
+function addBotMessage(text) {
+    conversation.push({ role: "bot", text: text });
+    $("#chatMessages").append(`
+        <div class="bot-msg-wrap">
+            <div class="bot-msg theme-border">
+                ${text}
+            </div>
+        </div>
+    `);
+    scrollChat();
+    saveConversation();
+}
+
+function saveConversation() {
+    localStorage.setItem("conversation", JSON.stringify(conversation));
+}
+
+function loadConversation() {
+    conversation.forEach(msg => {
+        if(msg.role === "user") addUserMessage(msg.text);
+        else addBotMessage(msg.text);
+    });
+}
+loadConversation(); // Load on page load
+
+function sendMessage() {
+    let message = $("#chat-input").val().trim();
+    if (!message) return;
+
+    addUserMessage(message);
+    $("#chat-input").val("");
+
+    addBotMessage("⏳ Typing...");
+
+    $.ajax({
+        url: "/chat",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ conversation: conversation }), // send full conversation
+        success: function (res) {
+            $("#chatMessages .bot-msg-wrap:last").remove();
+            addBotMessage(res.msg);
+        },
+        error: function () {
+            $("#chatMessages .bot-msg-wrap:last").remove();
+            addBotMessage("⚠️ Server error. Try again.");
+        }
+    });
+}
+
+$("#chat-input").on("keypress", function (e) {
+    if (e.which === 13) sendMessage();
+});
+function scrollChat() {
+    const chat = document.getElementById("chatMessages");
+    chat.scrollTop = chat.scrollHeight;
+}
+
+</script>
 </body>
 </html>
