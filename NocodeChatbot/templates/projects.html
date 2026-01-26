@@ -55,6 +55,7 @@ function loadprojects() {
                     var projectListHtml = '';
                     for (var i = 0; i < projects.length; i++) {
                         var project = projects[i];
+                        let project_details = project.project_details.replace(/\\/g, '\\\\') .replace(/'/g, "\\'").replace(/\n/g, '\\n');
                         var ago = "";
                         if (!project.created_on) {
                             ago = "Not Found";
@@ -79,7 +80,7 @@ function loadprojects() {
                                                 <i class="ri-more-2-fill"></i>
                                             </a>
                                             <ul class="dropdown-menu dropdown-menu-end">
-                                                <li><a class="dropdown-item" Onclick="editProject(${project.id}, '${project.project_name}', '${project.project_details}')"><i class="ri-pencil-line me-2"></i> Edit</a></li>
+                                                <li><a class="dropdown-item" Onclick="editProject(${project.id}, '${project.project_name}', '${project_details}')"><i class="ri-pencil-line me-2"></i> Edit</a></li>
                                                 <li><a class="dropdown-item" Onclick="deleteProject(${project.id})"><i class="ri-delete-bin-line me-2"></i> Delete</a></li>
                                             </ul>
                                         </div>
@@ -177,6 +178,7 @@ let curentProjectId = null;
 function editProject(id, name, details) {
     currentProjectId = id;
     $("#projectName").val(name);
+    details = details.replace(/&#39;/g, "'");
     $("#projectDetails").val(details);
 
     $("#saveProjectBtn").hide();

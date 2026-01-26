@@ -325,6 +325,7 @@ function loadChatbots(projectId) {
             }
             res.chatbot_list.forEach((bot, index) => {
                 let langName = bot.chatbot_language;
+                let instructions = bot.chatbot_instructions.replace(/\\/g, '\\\\') .replace(/'/g, "\\'").replace(/\n/g, '\\n');
                 chatbotTable.row.add([
                     index + 1,
                     bot.chatbot_name,
@@ -335,7 +336,7 @@ function loadChatbots(projectId) {
                     bot.created_on,
                     `
                     <button class="btn btn-sm btn-primary me-1"
-                        onclick="editChatbot('${bot.id}','${bot.chatbot_domain}','${bot.chatbot_model}','${bot.chatbot_name}','${bot.chatbot_color_code}','${bot.chatbot_language}','${bot.project_id}','${bot.customer_id}','${bot.chatbot_tone}','${bot.chatbot_instructions}')">
+                        onclick="editChatbot('${bot.id}','${bot.chatbot_domain}','${bot.chatbot_model}','${bot.chatbot_name}','${bot.chatbot_color_code}','${bot.chatbot_language}','${bot.project_id}','${bot.customer_id}','${bot.chatbot_tone}','${instructions}')">
                         <i class="ri-pencil-line"></i>
                     </button>
                     <button class="btn btn-sm btn-danger"
@@ -429,6 +430,7 @@ function editChatbot(id, domain, model, name, color_code, language, project_id, 
     $("#chatbot_language").val(language);
     $("#chatbot_color_code").val(color_code);
     $(`input[name="chatbot_tone"][value="${tone}"]`).prop("checked", true).trigger("change");
+    instructions = instructions.replace(/&#39;/g, "'");
     $("#chatbot_instructions").val(instructions);
 
     $("#btnSaveChatbot").hide();
