@@ -1,7 +1,7 @@
 import os
 import shutil
 from flask import current_app
-from NocodeChatbot.models.projects import Projects  # adjust import if needed
+from NocodeChatbot.models.projects import Projects
 
 
 class ChatbotGenerator:
@@ -24,16 +24,16 @@ class ChatbotGenerator:
             "wrk"
         )
 
-        # 3️⃣ customerid_projectid_builderid
         main_folder = f"{self.customer_id}_{self.project_id}_{self.builder_id}"
         main_path = os.path.join(base_path, main_folder)
-        os.makedirs(main_path, exist_ok=True)
+        if os.path.exists(main_path):
+            shutil.rmtree(main_path)
+        os.makedirs(main_path)
 
         # 4️⃣ project folder
         project_path = os.path.join(main_path, project_name)
-        os.makedirs(project_path, exist_ok=True)
+        os.makedirs(project_path)
 
-        # 5️⃣ COPY model_app (not move, not delete)
         source_model_app = os.path.join(
             current_app.root_path,
             "model_app"
@@ -44,6 +44,4 @@ class ChatbotGenerator:
             "model_app"
         )
 
-        # copy only if not already copied
-        if not os.path.exists(destination_model_app):
-            shutil.copytree(source_model_app, destination_model_app)
+        shutil.copytree(source_model_app, destination_model_app)
