@@ -69,7 +69,7 @@
 
     <div class="node with-dots action">
       <span class="dot left"></span>
-      <button class="btn btn-success">
+      <button class="btn btn-success" onclick="builderInitiate()">
         <i class="ri-brain-line"></i> Build
       </button>
     </div>
@@ -447,7 +447,32 @@ function resetBuilderUI() {
     $(".node, .extractor-connector, .chatbot-connector")
         .removeClass("active prev-active");
 }
-
+function builderInitiate() {
+    if (!selectedExtractorId || !selectedChatbotId) {
+        nocodealert("Please select both a data extractor and a chatbot before building.", "warning");
+        return;
+    }
+    const projectId = $("#project").val();
+    $.ajax({
+        url: "/chatbotbuilder/initiate_builder",
+        type: "POST",
+        data: {
+            project_id: projectId,
+            data_extractor_id: selectedExtractorId,
+            chatbot_id: selectedChatbotId
+        },
+        success: function (res) {
+            if (res.error_code === 0) {
+                nocodealert(res.msg || "Chatbot build initiated successfully!", "success");
+            } else {
+                nocodealert(res.msg || "Failed to initiate chatbot build.", "error");
+            }
+        },
+        error: function () {
+            nocodealert("Error initiating chatbot build.", "error");
+        }
+    });
+}
 </script>
 
 {% endblock %}

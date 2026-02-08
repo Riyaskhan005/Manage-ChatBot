@@ -13,5 +13,6 @@ __pycache__/
 NocodeChatBotLogs
 NocodeChatbot/static/dataextractor
 NocodeChatbot/static/original_file
+NocodeChatbot/static/wrk
 NocodeChatbot/static/profile_images/
 NocodeChatbot/model_app/ChatBotLogs/
