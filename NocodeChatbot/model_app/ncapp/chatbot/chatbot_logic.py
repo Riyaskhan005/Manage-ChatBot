@@ -31,7 +31,7 @@ Instructions:
 - Be helpful, polite, and clear.
 - ONLY answer questions related to your domain: "{chatbot_domain}".
 - If the question is outside your domain, respond politely: 
-  "⚠️ Sorry, I can only answer questions about {chatbot_domain}."
+  "Sorry, I can only answer questions about {chatbot_domain}."
 
 """
 

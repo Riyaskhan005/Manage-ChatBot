@@ -108,6 +108,8 @@ def initiate_builder():
     try:
         customer_id = session["CustomerId"]
         project_id = request.form["project_id"]
+        chatbot_id = request.form["chatbot_id"]
+        dataextractor_id = request.form["data_extractor_id"]
 
         if not project_id:
             return_msg['msg'] = "Project ID is required."
@@ -128,6 +130,7 @@ def initiate_builder():
         builder_id = builder.id
 
         chatbot = ManageChatbot.query.filter_by(
+            id = chatbot_id,
             project_id=project_id,
             customer_id=customer_id,
             status="Active"
@@ -150,7 +153,7 @@ def initiate_builder():
             return jsonify(return_msg)
 
         model_id = model.id
-        generator = ChatbotGenerator(customer_id,project_id,builder_id,model_id)
+        generator = ChatbotGenerator(customer_id,project_id,builder_id,model_id,dataextractor_id,chatbot.id)
         generator.generate_chatbot()
 
         return_msg['msg'] = "Chatbot initiated successfully."

@@ -34,7 +34,7 @@ def chat():
 
         # Optional RAG text
         rag_text = load_rag_text()
-        final_prompt = build_prompt(user_message=conversation[-1]['text'], rag_text=rag_text,conversation_text=conversation_text, chatbot_name="Demo Chatbot",chatbot_domain="General")
+        final_prompt = build_prompt(user_message=conversation[-1]['text'], rag_text=rag_text,conversation_text=conversation_text, chatbot_name="REPLACE_CHATBOT_NAME",chatbot_domain="REPLACE_CHATBOT_DOMAIN")
         bot_reply = "Hi there! This is a Dummy Response from the Chatbot."
 
         # REPLACE API CALL
