@@ -47,11 +47,11 @@
 }
 
 .theme-border {
-    border-left: 4px solid #4b38b3;
+    border-left: 4px solid REPLACE_CHATBOT_COLOR;
 }
 
 .theme-bg {
-    background: #4b38b3;
+    background: REPLACE_CHATBOT_COLOR;
 }
 /* ===== Floating Wave Button ===== */
 #chat-wave-btn {

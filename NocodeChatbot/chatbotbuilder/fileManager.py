@@ -35,15 +35,24 @@ class FileManager:
             language = chatbot_data.chatbot_language
             tone = chatbot_data.chatbot_tone
             instructions = chatbot_data.chatbot_instructions or "Be helpful, polite, and clear"
+            chatbot_color_code = chatbot_data.chatbot_color_code or "#4b38b3"
 
             chatbot_logic_path = os.path.join(app_folder_path,"ncapp","chatbot","chatbot_logic.py")
             chatbot_routes_path = os.path.join(app_folder_path,"ncapp","chatbot","routes.py")
+            chatbot_css_path = os.path.join(app_folder_path,"ncapp","static","css","chatbot.css")
+            chatbot_html_path = os.path.join(app_folder_path,"ncapp","templates","chat.html")
 
             if not os.path.exists(chatbot_logic_path):
                 raise Exception("chatbot_logic.py not found in cloned project")
             
             if not os.path.exists(chatbot_routes_path):
                 raise Exception("routes.py not found in cloned project")
+            
+            if not os.path.exists(chatbot_css_path):
+                raise Exception("chatbot.css not found in cloned project")
+            
+            if not os.path.exists(chatbot_html_path):
+                raise Exception("chat.html not found in cloned project")
 
             with open(chatbot_logic_path, "r", encoding="utf-8") as f:
                 content = f.read()
@@ -54,10 +63,26 @@ class FileManager:
             content = content.replace("REPLACE_TONE", tone)
             content = content.replace("Be helpful, polite, and clear", instructions)
 
+            with open(chatbot_css_path, "r", encoding="utf-8") as f:
+                css_content = f.read()
+
+            css_content = css_content.replace("REPLACE_CHATBOT_COLOR", chatbot_color_code)
+
+            with open(chatbot_css_path, "w", encoding="utf-8") as f:
+                f.write(css_content)
+
+            with open(chatbot_html_path, "r", encoding="utf-8") as f:
+                html_content = f.read()
+
+            html_content = html_content.replace("REPLACE_CHATBOT_NAME", chatbot_data.chatbot_name)
+            html_content = html_content.replace("REPLACE_CHATBOT_COLOR", chatbot_color_code)
+
+            with open(chatbot_html_path, "w", encoding="utf-8") as f:
+                f.write(html_content)
+
+
             with open(chatbot_logic_path, "w", encoding="utf-8") as f:
                 f.write(content)
-
-            print("Chatbot configured successfully")
 
             api_call_code, api_import_package = self.generate_api_call_code(model_type)
 
@@ -91,6 +116,8 @@ class FileManager:
                         print("RAG data copied successfully")
             else:
                 print("No data extractor folder found, skipping RAG setup")
+
+            print("Chatbot configured successfully")
 
         
         except Exception as e:
