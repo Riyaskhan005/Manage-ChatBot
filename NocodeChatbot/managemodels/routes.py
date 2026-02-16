@@ -154,6 +154,17 @@ def delete_model():
             return_msg["msg"] = "Model not found"
             return json.dumps(return_msg)
 
+        chatbot_using_model = ManageChatbot.query.filter_by(
+            chatbot_model=str(model_id),
+            customer_id=customer_id,
+            status="Active"
+        ).first()
+
+        if chatbot_using_model:
+            return_msg["error_code"] = 1
+            return_msg["msg"] = f"Cannot delete. Model is used by chatbot '{chatbot_using_model.chatbot_name}'."
+            return json.dumps(return_msg)
+
         db.session.delete(model)
         db.session.commit()
 

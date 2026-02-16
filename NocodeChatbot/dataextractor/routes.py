@@ -11,6 +11,9 @@ from NocodeChatbot.models.models import ManageModels
 from NocodeChatbot.models.dataextraction import DataExtractor
 from NocodeChatbot.utils.logwritter import LogWriter 
 from NocodeChatbot.utils.common import get_utc_now
+from NocodeChatbot.models.chatbotbuilder import ChatbotBuilder
+import json
+
 
 log_writer_ = LogWriter()
 
@@ -341,6 +344,24 @@ def delete_data_extractor():
             return_msg['msg'] = "Data Extractor not found."
             return_msg['error_code'] = 1
             return jsonify(return_msg)
+        
+        builder_records = ChatbotBuilder.query.filter_by(
+            customer_id=customer_id,
+            status="Active"
+        ).all()
+
+        for builder in builder_records:
+            if builder.builder_flow_json not in (None, "", "[]"):
+                flow_data = json.loads(builder.builder_flow_json)
+                first_item = flow_data[0]
+
+                dataextractor = first_item["dataextractor"]
+
+                if dataextractor and str(dataextractor["id"]) == str(extractor_id):
+                    return_msg['msg'] = "Cannot delete. Data Extractor is used in Chatbot Builder."
+                    return_msg['error_code'] = 1
+                    return jsonify(return_msg)
+
 
         extractor_folder = os.path.join(
             current_app.root_path,

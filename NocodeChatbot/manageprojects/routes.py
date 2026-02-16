@@ -2,10 +2,14 @@ from asyncio.log import logger
 from flask import Flask, render_template,request,jsonify, session
 from NocodeChatbot.extensions import db
 from NocodeChatbot.manageprojects import bp
+from NocodeChatbot.models.chatbot import ManageChatbot
 from NocodeChatbot.models.projects import Projects
 import json
 from NocodeChatbot.utils.common import get_utc_now
 from NocodeChatbot.utils.logwritter import LogWriter 
+from NocodeChatbot.models.chatbotbuilder import ChatbotBuilder
+import json
+
 # from NocodeChatbot.utils.login_requried import login_required
 log_writer_ = LogWriter()
 
@@ -139,7 +143,31 @@ def delete_project():
             return_msg["error_code"] = 1
             return_msg["msg"] = "Project not found"
             return json.dumps(return_msg)
+        chatbot_exist = ManageChatbot.query.filter_by(project_id=project_id,status="Active").first()
 
+        if chatbot_exist:
+            return_msg["error_code"] = 1
+            return_msg["msg"] = "This project is already used in Manage Chatbot"
+            return json.dumps(return_msg)
+        
+        builder_record = ChatbotBuilder.query.filter_by(
+            project_id=project_id,
+            status="Active"
+        ).first()
+
+        builder_record = ChatbotBuilder.query.filter_by(
+        project_id=project_id,
+        status="Active"
+        ).first()
+
+        if builder_record and builder_record.builder_flow_json not in (None, "", "[]"):
+            flow_data = json.loads(builder_record.builder_flow_json)
+            first_item = flow_data[0]
+            if not (first_item["dataextractor"] is None and first_item["chatbot"] is None):
+                return_msg["error_code"] = 1
+                return_msg["msg"] = "Cannot delete. Builder flow already configured."
+                return json.dumps(return_msg)
+            
         db.session.delete(project)
         db.session.commit()
 
