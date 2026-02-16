@@ -162,6 +162,14 @@ function getProjects() {
                         `<option value="${project.id}">${project.name}</option>`
                     );
                 }
+                var savedProjectId = localStorage.getItem("selectedProjectId");
+
+                if (savedProjectId) {
+                    $dropdown.val(savedProjectId);
+                    loadChatbots(savedProjectId);
+                    loadBuilder(savedProjectId);
+                    loadBuilderFlow(savedProjectId);
+                }
             } else {
                 nocodealert(data.msg, "error");
             }
@@ -179,6 +187,7 @@ function viewDetails() {
         nocodealert("Please select a project.", "warning");
         return;
     }
+    localStorage.setItem("selectedProjectId", projectId);
     loadChatbots(projectId);
     loadBuilder(projectId);
     loadBuilderFlow(projectId);
