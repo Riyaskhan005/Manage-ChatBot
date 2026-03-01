@@ -175,6 +175,10 @@ function loadProjectUsageChart() {
             response = JSON.parse(response);
 
             if (response.error_code === 0) {
+                var randomColors = [];
+                for (var i = 0; i < response.data.length; i++) {
+                    randomColors.push(getRandomColor());
+                }
 
                 var options = {
                     chart: {
@@ -189,11 +193,12 @@ function loadProjectUsageChart() {
                     xaxis: {
                         categories: response.labels
                     },
-                    colors: ['#405189'], // Velzon primary color
+                    colors: randomColors,
                     plotOptions: {
                         bar: {
                             borderRadius: 4,
-                            columnWidth: '45%'
+                            columnWidth: '45%',
+                            distributed: true
                         }
                     },
                     dataLabels: {
@@ -213,6 +218,15 @@ function loadProjectUsageChart() {
             }
         }
     });
+}
+
+function getRandomColor() {
+    var letters = '0123456789ABCDEF';
+    var color = '#';
+    for (var i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
 
 }
 </script>
