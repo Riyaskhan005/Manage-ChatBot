@@ -1,0 +1,219 @@
+{% extends "base.html" %} {% block title %} ChatBot Builder {% endblock %}
+{% block body %}
+<script src="../static/libs/apexcharts/apexcharts.min.js"></script>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-8">
+            <div class="card overflow-hidden">
+                <div class="card-body bg-marketplace d-flex">
+                    <div class="flex-grow-1">
+                        <h4 class="fs-18 lh-base mb-0">
+                            Hey, Hi {{ session.get('FirstName', '') }} 👋 <br>
+                            Build, Train and Launch your own 
+                            <span class="text-primary">AI Chatbot</span>
+                        </h4>
+                        <p class="mb-0 mt-2 pt-1 text-muted">
+                            Create intelligent conversations and automate your business in minutes.
+                        </p>
+                        <div class="d-flex gap-3 mt-4">
+                            <a href="/projects" class="btn btn-soft-primary">
+                                Let's Start Building
+                            </a>
+                        </div>
+                    </div>
+                    <img src="assets/images/bg-d.png" alt="" class="img-fluid">
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6">
+            <div class="card card-height-100 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar-sm flex-shrink-0">
+                            <span class="avatar-title bg-secondary-subtle rounded fs-3">
+                                <i class="bx bx-folder text-secondary"></i>
+                            </span>
+                        </div>
+                        <div class="flex-grow-1 ps-3">
+                            <h5 class="text-muted text-uppercase fs-13 mb-0">
+                                <a href="/projects" class="text-secondary">Total Projects</a>
+                            </h5>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h2 class="fw-bold text-secondary" id="projectCount">0</h2>
+                        <p class="text-muted mb-0">Active Projects</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="col-xl-4 col-md-6">
+            <div class="card card-height-100 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar-sm flex-shrink-0">
+                            <span class="avatar-title bg-primary-subtle rounded fs-3">
+                                <i class="ri-database-2-line text-primary"></i>
+                            </span>
+                        </div>
+                        <div class="flex-grow-1 ps-3">
+                            <h5 class="text-muted text-uppercase fs-13 mb-0">
+                                <a href="/dataextraction" class="text-primary">Total Data Extractors</a>
+                            </h5>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h2 class="fw-bold text-primary" id="extractorCount">0</h2>
+                        <p class="text-muted mb-0">Total Extractors</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6">
+            <div class="card card-height-100 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar-sm flex-shrink-0">
+                            <span class="avatar-title bg-success-subtle rounded fs-3">
+                                <i class="bx bx-bot text-success"></i>
+                            </span>
+                        </div>
+                        <div class="flex-grow-1 ps-3">
+                            <h5 class="text-muted text-uppercase fs-13 mb-0">
+                               <a href="/chatbot" class="text-success">Total Chatbots</a>
+                            </h5>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h2 class="fw-bold text-success" id="chatbotCount">0</h2>
+                        <p class="text-muted mb-0">Created Chatbots</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6">
+            <div class="card card-height-100 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar-sm flex-shrink-0">
+                            <span class="avatar-title bg-warning-subtle rounded fs-3">
+                                <i class="bx bx-brain text-warning"></i>
+                            </span>
+                        </div>
+                        <div class="flex-grow-1 ps-3">
+                            <h5 class="text-muted text-uppercase fs-13 mb-0">
+                                <a href="/models" class="text-warning">Total Models</a>
+                            </h5>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <h2 class="fw-bold text-warning" id="modelCount">0</h2>
+                        <p class="text-muted mb-0">Configured AI Models</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Work Flow Project Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div id="projectUsageChart" style="height:350px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+$(document).ready(function () {
+    loadDashboardStats();
+    loadProjectUsageChart();   // Call function on page load
+});
+
+function loadDashboardStats() {
+
+    $.ajax({
+        url: "/home/get_data",
+        type: "GET",
+        success: function (response) {
+
+            response = JSON.parse(response);  
+
+            if (response.error_code === 0) {
+                $("#projectCount").text(response.projects);
+                $("#extractorCount").text(response.extractors);
+                $("#chatbotCount").text(response.chatbots);
+                $("#modelCount").text(response.models);
+
+            } else {
+                console.log(response.msg);
+            }
+        },
+        error: function () {
+            console.log("Error loading dashboard stats");
+        }
+    });
+
+}
+function loadProjectUsageChart() {
+
+    $.ajax({
+        url: "/home/get_project_chart",
+        type: "GET",
+        success: function (response) {
+
+            response = JSON.parse(response);
+
+            if (response.error_code === 0) {
+
+                var options = {
+                    chart: {
+                        type: 'bar',
+                        height: 350,
+                        toolbar: { show: false }
+                    },
+                    series: [{
+                        name: 'Usage Count',
+                        data: response.data
+                    }],
+                    xaxis: {
+                        categories: response.labels
+                    },
+                    colors: ['#405189'], // Velzon primary color
+                    plotOptions: {
+                        bar: {
+                            borderRadius: 4,
+                            columnWidth: '45%'
+                        }
+                    },
+                    dataLabels: {
+                        enabled: false
+                    },
+                    grid: {
+                        borderColor: '#f1f1f1'
+                    }
+                };
+
+                var chart = new ApexCharts(
+                    document.querySelector("#projectUsageChart"),
+                    options
+                );
+
+                chart.render();
+            }
+        }
+    });
+
+}
+</script>
+         {% endblock %}
