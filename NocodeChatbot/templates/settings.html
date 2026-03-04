@@ -215,7 +215,7 @@
 
         }
         else{
-            
+            showLoader();
             $.ajax({
                 url: '/settings/ProfileDetailsUpdate',
                 type: 'POST',
@@ -238,15 +238,17 @@
                         nocodealert(data["msg"], 'error', 1500);
 
                     }
+                    hideLoader();
                 },
                 error: function () {
                     nocodealert("An error occurred. Please try again.", 'error', 1500);
+                    hideLoader();
                 }
             });
         }
     }
     function onloadProfiledetails(){
-        
+        showLoader();
         $.ajax({
             url: '/settings/getProfileDetails',
             type: 'GET',
@@ -261,9 +263,11 @@
                 } else {
                     nocodealert(data["msg"], 'error', 1500);
                 }
+                hideLoader();
             },
             error: function () {
-                nocodealert("An error occurred. Please try again.", 'error', 1500)
+                nocodealert("An error occurred. Please try again.", 'error', 1500);
+                hideLoader();
             }
         });
     }
@@ -285,6 +289,7 @@
             nocodealert("New password and confirm password do not match.", 'warning', 1500);
 
         }else{
+            showLoader();
             let messages = [];
 
             if (newpasswordInput.length < 8) {
@@ -305,6 +310,7 @@
 
             if (messages.length > 0) {
                 nocodealert(messages.join("\n"), 'warning', 4000);
+                hideLoader();
                 return;
             }
             
@@ -326,9 +332,11 @@
                         nocodealert(data["msg"], 'error', 1500);
 
                     }
+                    hideLoader();
                 },
                 error: function () {
                     nocodealert("An error occurred. Please try again.", 'error', 1500);
+                    hideLoader();
                 }
             });
         }
@@ -345,7 +353,7 @@ function ChangeProfile() {
         }
         reader.readAsDataURL(file);
         
-
+        showLoader();
         $.ajax({
             url: '/settings/ChangeProfile',
             type: 'POST',
@@ -358,9 +366,11 @@ function ChangeProfile() {
                 } else {
                     nocodealert(data["msg"], 'error', 1500);
                 }
+                hideLoader();
             },
             error: function () {
                 nocodealert("An error occurred. Please try again.", 'error', 1500)
+                hideLoader();
             }
         });
     }

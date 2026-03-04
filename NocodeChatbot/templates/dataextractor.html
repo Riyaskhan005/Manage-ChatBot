@@ -78,6 +78,7 @@ $(document).ready(function() {
     loadDataextractor();
 });
 function loadDataextractor() {
+    showLoader();
     $.ajax({
         url: "/dataextraction/loaddataextractors",
         type: "GET",
@@ -174,9 +175,11 @@ function loadDataextractor() {
             } else {
                 nocodealert(data.msg || "No data found", "error");
             }
+            hideLoader();
         },
         error: function() {
             nocodealert("Failed to load data extraction.", "error");
+            hideLoader();
         }
     });
 }
@@ -224,6 +227,7 @@ function saveDataExtractor() {
             $("#websiteURL").removeClass("is-invalid");
         }
     }
+    showLoader();
     var formData = new FormData();
     formData.append("name", name);
     formData.append("extractiontype", extractiontype);
@@ -246,10 +250,12 @@ function saveDataExtractor() {
             } else {
                 nocodealert(data.msg, "error");
             }
+            hideLoader();
         },
         error: function () {
             $("#loader").hide();
             nocodealert("Unexpected error occurred.", "error");
+            hideLoader();
         }
     });
 }
@@ -331,7 +337,7 @@ function updateExtractor() {
             $("#websiteURL").removeClass("is-invalid");
         }
     }
-
+    showLoader();
     var formData = new FormData();
     formData.append("id", currentExtractorId);
     formData.append("name", name);
@@ -356,10 +362,12 @@ function updateExtractor() {
             } else {
                 nocodealert(response.msg, "error");
             }
+            hideLoader();
         },
         error: function() {
             $("#loader").hide();
             nocodealert("Unexpected error occurred.", "error");
+            hideLoader();
         }
     });
 }
@@ -371,6 +379,7 @@ function deleteModel(id) {
         "Cancel"
     ).then((confirmed) => {
         if (confirmed) {
+            showLoader();
             $.ajax({
                 url: "/dataextraction/delete_data_extractor",
                 type: "POST",
@@ -383,9 +392,11 @@ function deleteModel(id) {
                     } else {
                         nocodealert(data.msg, "error");
                     }
+                    hideLoader();
                 },
                 error: function() {
                     nocodealert("Unexpected error occurred.", "error");
+                    hideLoader();
                 }
             });
         }

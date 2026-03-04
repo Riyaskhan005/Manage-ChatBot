@@ -147,6 +147,7 @@ $(document).ready(function () {
 
 
 function getProjects() {
+    showLoader();
     $.ajax({
         url: "/common/getprojects",
         type: "GET",
@@ -173,9 +174,11 @@ function getProjects() {
             } else {
                 nocodealert(data.msg, "error");
             }
+            hideLoader();
         },
         error: function () {
             nocodealert("Failed to load projects.", "error");
+            hideLoader();
         }
     });
 }
@@ -201,6 +204,7 @@ function onChangeProjects() {
     resetBuilderUI(); 
 }
 function loadDataExtractors() {
+    showLoader();
   $.ajax({
     url: "/dataextraction/loaddataextractors",
     type: "GET",
@@ -236,17 +240,21 @@ function loadDataExtractors() {
                 }
 
                 $("#extractorList").html(html);
+                hideLoader();
 
             } else {
                 nocodealert(data.msg || "No data found", "error");
+                hideLoader();
             }
         },
         error: function() {
             nocodealert("Failed to load data extraction.", "error");
+            hideLoader();
         }
     });
 }
 function loadChatbots(projectId) {
+    showLoader();
     $.ajax({
         url: "/chatbot/loadchatbot",
         type: "POST",
@@ -282,13 +290,15 @@ function loadChatbots(projectId) {
                 }
 
                 $("#chatbotList").html(html);
-                $('[data-bs-toggle="tooltip"]').tooltip();
+                $('[data-bs-toggle="tooltip"]').tooltip(); 
             } else {
                 nocodealert(data.msg || "No chatbots found.", "error");
             }
+            hideLoader();
         },
         error: function() {
             nocodealert("Failed to load chatbots.", "error");
+            hideLoader();
         }
     });
 }
@@ -373,7 +383,7 @@ function removeChatbot() {
 function saveBuilderFlow() {
     const projectId = $("#project").val();
     if (!projectId) return;
-
+    showLoader();
     $.ajax({
         url: "/chatbotbuilder/save_builder_flow",
         type: "POST",
@@ -385,13 +395,16 @@ function saveBuilderFlow() {
             if (res.error_code !== 0) {
                 nocodealert(res.msg || "Failed to save builder flow", "error");
             }
+            hideLoader();
         },
         error: function () {
             nocodealert("Builder auto-save failed", "error");
+            hideLoader();
         }
     });
 }
 function loadBuilderFlow(projectId) {
+    showLoader();
     $.ajax({
         url: "/chatbotbuilder/get_builder_flow",
         type: "POST",
@@ -399,11 +412,13 @@ function loadBuilderFlow(projectId) {
         success: function (res) {
             if (res.error_code !== 0) {
                 nocodealert(res.msg || "Failed to load builder flow", "error");
+                hideLoader();
                 return;
             }
 
             if (!res.builder_flow_json) {
                 $("#builderContainer").show();
+                hideLoader();
                 return;
             }
 
@@ -412,6 +427,7 @@ function loadBuilderFlow(projectId) {
             applyBuilderFlow(builderJson[0]);
 
             $("#builderContainer").show();
+            hideLoader();
         }
     });
 }
@@ -461,6 +477,7 @@ function builderInitiate() {
         nocodealert("Please select both a data extractor and a chatbot before building.", "warning");
         return;
     }
+    showLoader();
     const projectId = $("#project").val();
     $.ajax({
         url: "/chatbotbuilder/initiate_builder",
@@ -476,9 +493,11 @@ function builderInitiate() {
             } else {
                 nocodealert(res.msg || "Failed to initiate chatbot build.", "error");
             }
+            hideLoader();
         },
         error: function () {
             nocodealert("Error initiating chatbot build.", "error");
+            hideLoader();
         }
     });
 }

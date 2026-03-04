@@ -141,7 +141,7 @@ $(document).ready(function () {
 });
 
 function loadDashboardStats() {
-
+    showLoader();
     $.ajax({
         url: "/home/get_data",
         type: "GET",
@@ -158,15 +158,17 @@ function loadDashboardStats() {
             } else {
                 console.log(response.msg);
             }
+            hideLoader();
         },
         error: function () {
             console.log("Error loading dashboard stats");
+            hideLoader();
         }
     });
 
 }
 function loadProjectUsageChart() {
-
+    showLoader();
     $.ajax({
         url: "/home/get_project_chart",
         type: "GET",
@@ -216,6 +218,7 @@ function loadProjectUsageChart() {
 
                 chart.render();
             }
+            hideLoader();
         }
     });
 }

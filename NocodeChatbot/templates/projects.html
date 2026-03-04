@@ -45,6 +45,7 @@ $(document).ready(function() {
     loadprojects();
 });
 function loadprojects() {
+    showLoader();
     $.ajax({
         url: "/projects/loadprojects",
         type: "GET",
@@ -120,9 +121,11 @@ function loadprojects() {
                 }
             } catch {
             }
+            hideLoader();
         },
         error: function(xhr) {
             nocodealert("Unexpected error occurred.", 'error', 2000);
+            hideLoader();
         }
     });
 }
@@ -147,7 +150,7 @@ function saveProject() {
         nocodealert("Please enter project details.", 'warning', 1500);
         return;
     }
-
+    showLoader();
     $.ajax({
         url: "/projects/save_project",
         type: "POST",
@@ -168,9 +171,11 @@ function saveProject() {
             }
             } catch {
             }
+            hideLoader();
         },
         error: function(xhr) {
-            nocodealert("Unexpected error occurred.", 'error', 2000);  
+            nocodealert("Unexpected error occurred.", 'error', 2000);
+            hideLoader();
         }
     });
 }
@@ -204,7 +209,7 @@ function updateProject() {
         nocodealert("Please enter project details.", 'warning', 1500);
         return;
     }
-
+    showLoader();
     $.ajax({
         url: "/projects/update_project",
         type: "POST",
@@ -226,9 +231,11 @@ function updateProject() {
             } catch {
                 nocodealert("Unexpected error occurred.", 'error', 2000);
             }
+            hideLoader();
         },
         error: function() {
             nocodealert("Unexpected error occurred.", 'error', 2000);
+            hideLoader();
         }
     });
 }
@@ -240,6 +247,7 @@ function deleteProject(id) {
         "Cancel"
     ).then((confirmed) => {
         if (confirmed) {
+            showLoader();
             $.ajax({
                 url: "/projects/delete_project",
                 type: "POST",
@@ -255,9 +263,11 @@ function deleteProject(id) {
                         }
                     } catch {
                     }
+                    hideLoader();
                 },
                 error: function() {
                     nocodealert("Unexpected error occurred.", 'error', 2000);
+                    hideLoader();
                 }
             });
         }

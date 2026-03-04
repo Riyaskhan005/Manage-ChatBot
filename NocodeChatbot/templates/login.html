@@ -85,7 +85,7 @@
             nocodealert("Please enter password.", 'warning', 1500);
                 return;
             }
-
+            showLoader();
             $.ajax({
             url: '/login',
                 type: 'POST',
@@ -110,9 +110,11 @@
                     } else {
                     nocodealert(data["msg"], 'error', 1500);
                     }
+                    hideLoader();
                 },
                 error: function(xhr) {
                 nocodealert("Unexpected error occurred", 'error', 1500);
+                hideLoader();
                 }
             });
         }

@@ -249,6 +249,7 @@ $(document).ready(function () {
 });
 
 function getModels() {
+    showLoader();
     $.ajax({
         url: "/common/getmodels",
         type: "GET",
@@ -267,13 +268,16 @@ function getModels() {
             } else {
                 nocodealert(data.msg, "error");
             }
+            hideLoader();
         },
         error: function () {
             nocodealert("Failed to load models.", "error");
+            hideLoader();
         }
     });
 }
 function getProjects() {
+    showLoader();
     $.ajax({
         url: "/common/getprojects",
         type: "GET",
@@ -298,9 +302,11 @@ function getProjects() {
             } else {
                 nocodealert(data.msg, "error");
             }
+            hideLoader();
         },
         error: function () {
             nocodealert("Failed to load projects.", "error");
+            hideLoader();
         }
     });
 }
@@ -315,7 +321,7 @@ function viewDetails() {
     loadChatbots(projectId)
 }
 function loadChatbots(projectId) {
-
+    showLoader();
     $.ajax({
         url: "/chatbot/loadchatbot",
         type: "POST",
@@ -328,6 +334,7 @@ function loadChatbots(projectId) {
 
             if (res.error_code !== 0 || res.chatbot_list.length === 0) {
                 chatbotTable.draw();
+                hideLoader();
                 return;
             }
             res.chatbot_list.forEach((bot, index) => {
@@ -355,9 +362,11 @@ function loadChatbots(projectId) {
             });
 
             chatbotTable.draw();
+            hideLoader();
         },
         error: function () {
             nocodealert("Server error while loading chatbot", "error");
+            hideLoader();
         }
     });
 }
@@ -398,7 +407,7 @@ function saveChatbot() {
         nocodealert("Please select chatbot tone/personality", "warning");
         return;
     }
-
+    showLoader();
     $.ajax({
         url: "/chatbot/create_chatbot",
         type: "POST",
@@ -421,9 +430,11 @@ function saveChatbot() {
             } else {
                 nocodealert(data["msg"], "error");
             }
+            hideLoader();
         },
         error: function () {
             nocodealert("Server error while saving chatbot", "error");
+            hideLoader();
         },
     });
 }
@@ -486,7 +497,7 @@ function updateChatbot() {
         nocodealert("Please select chatbot tone/personality", "warning");
         return;
     }
-
+    showLoader();
     $.ajax({
         url: "/chatbot/update_chatbot",
         type: "POST",
@@ -510,9 +521,11 @@ function updateChatbot() {
             } else {
                 nocodealert(data["msg"], "error");
             }
+            hideLoader();
         },
         error: function () {
             nocodealert("Server error while updating chatbot", "error");
+            hideLoader();
         },
     });
 }
@@ -553,24 +566,27 @@ function deleteChatbot(chatbotId) {
         "Cancel"
     ).then((confirmed) => {
         if (confirmed) {
-    $.ajax({
-        url: "/chatbot/delete_chatbot",
-        type: "POST",
-        data: { chatbot_id: chatbotId },
-        success: function (res) {
-            data = JSON.parse(res);
-            if (data["error_code"] === 0) {
-                nocodealert(data["msg"], "success");
-                loadChatbots(projectId);
-            } else {
-                nocodealert(data["msg"], "error");
-            }
-        },
-        error: function () {
-            nocodealert("Server error while deleting chatbot", "error");
-        },
-    });
-}
+        showLoader();
+            $.ajax({
+                url: "/chatbot/delete_chatbot",
+                type: "POST",
+                data: { chatbot_id: chatbotId },
+                success: function (res) {
+                    data = JSON.parse(res);
+                    if (data["error_code"] === 0) {
+                        nocodealert(data["msg"], "success");
+                        loadChatbots(projectId);
+                    } else {
+                        nocodealert(data["msg"], "error");
+                    }
+                    hideLoader();
+                },
+                error: function () {
+                    nocodealert("Server error while deleting chatbot", "error");
+                    hideLoader();
+                },
+            });
+        }
     });
 }
 function updatePreview() {

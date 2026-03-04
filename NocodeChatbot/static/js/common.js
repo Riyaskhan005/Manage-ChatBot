@@ -42,3 +42,14 @@ function nocodeCenterAlert(msg, type = 'success', timer = 2000, callback = null)
         if (callback) callback();
     });
 }
+$(window).on("load", function () {
+    $("#preloader").fadeOut(600);
+});
+
+function showLoader() {
+    $("#preloader").fadeIn();
+}
+
+function hideLoader() {
+    $("#preloader").fadeOut();
+}
