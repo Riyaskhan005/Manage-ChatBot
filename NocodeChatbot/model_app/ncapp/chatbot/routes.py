@@ -10,8 +10,8 @@ log_writer_ = LogWriter()
 @bp.route('/')
 def index():
     # Initialize conversation in session
-    if 'conversation' not in session:
-        session['conversation'] = []
+    # if 'conversation' not in session:
+    #     session['conversation'] = []
     return render_template("chat.html")
 
 
