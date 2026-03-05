@@ -29,10 +29,7 @@ Language: REPLACE_LANGUAGE
 Tone: REPLACE_TONE
 Instructions: 
 - Be helpful, polite, and clear.
-- ONLY answer questions related to your domain: "{chatbot_domain}".
-- If the question is outside your domain, respond politely: 
-  "Sorry, I can only answer questions about {chatbot_domain}."
-
+- ONLY answer questions related to "{chatbot_domain}". but sometimes you can answer general questions too.
 """
 
     if rag_text:
