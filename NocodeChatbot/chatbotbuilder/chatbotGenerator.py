@@ -22,25 +22,18 @@ class ChatbotGenerator:
             project_name = project.project_name if project else f"project_{self.project_id}"
             project_name = project_name.replace(" ", "_")
 
-            base_path = os.path.join(
-                current_app.root_path,
-                "static",
-                "wrk"
-            )
+            base_path = os.path.join(current_app.root_path, "static", "wrk")
 
             main_folder = f"{self.customer_id}_{self.project_id}_{self.builder_id}"
             main_path = os.path.join(base_path, main_folder)
-            if os.path.exists(main_path):
+            if os.path.isdir(main_path):
                 shutil.rmtree(main_path)
-            os.makedirs(main_path)
+            os.makedirs(main_path, exist_ok=True)
 
             project_path = os.path.join(main_path, project_name)
-            os.makedirs(project_path)
+            os.makedirs(project_path, exist_ok=True)
 
-            source_model_app = os.path.join(
-                current_app.root_path,
-                "model_app"
-            )
+            source_model_app = os.path.join(current_app.root_path, "model_app")
 
 
             shutil.copytree(source_model_app, project_path, dirs_exist_ok=True)
