@@ -27,6 +27,7 @@
                         <option value="" selected>Choose Config</option>
                         <option value="OpenAI">Open AI</option>
                         <option value="Gemini">Gemini</option>
+                        <option value="Groq">Groq</option>
                     </select>
                 </div>
                 <div class="mb-3">
@@ -84,8 +85,10 @@ function loadModels() {
                      var logo = "";
                     if (model.config === "Open AI") {
                         logo = '<img src="/static/images/openai-logo.png" alt="OpenAI" style="height:20px; margin-right:5px;">';
-                    } else if (model.config === "Gemmini") {
-                        logo = '<img src="/static/images/gemmini-logo.png" alt="Gemmini" style="height:20px; margin-right:5px;">';
+                    } else if (model.config === "Gemini") {
+                        logo = '<img src="/static/images/gemmini-logo.png" alt="Gemini" style="height:20px; margin-right:5px;">';
+                    } else if (model.config === "Groq") {
+                        logo = '<img src="/static/images/groq-logo.png" alt="Groq" style="height:20px; margin-right:5px;">';
                     }
 
                         html += `
