@@ -77,7 +77,7 @@
     width: 58px;
     height: 58px;
     border-radius: 50%;
-    background: rgba(75, 56, 179, 0.35);
+    background: REPLACE_CHATBOT_COLOR;
     animation: wavePulse 1.8s infinite;
 }
 
