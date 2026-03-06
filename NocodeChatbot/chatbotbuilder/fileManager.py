@@ -167,6 +167,26 @@ class FileManager:
             bot_reply = "Sorry, I could not generate a reply."
     """
 
+        elif model_type == "Groq":
+
+            api_import_package = """from groq import Groq"""
+
+            api_call_code = """
+        client = Groq(api_key=API_KEY)
+
+        response = client.chat.completions.create(
+            model=MODEL_NAME,
+            messages=[
+                {"role": "user", "content": final_prompt}
+            ]
+        )
+
+        if response.choices:
+            bot_reply = response.choices[0].message.content
+        else:
+            bot_reply = "Sorry, I could not generate a reply."
+        """
+
         else:
 
             api_import_package = "# Unsupported model"

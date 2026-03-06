@@ -33,11 +33,11 @@ Instructions:
 """
 
     if rag_text:
-        rag_text = rag_text[:2000]
+        # rag_text = rag_text[:2000]
         prompt += f"\nKnowledge Base:\n{rag_text}\n"
 
-    # if conversation_text:
-    #     prompt += f"\nConversation History:\n{conversation_text}\n"
+    if conversation_text:
+        prompt += f"\nConversation History:\n{conversation_text}\n"
         
     prompt += f"\nUser Question:\n{user_message}"
 
