@@ -221,7 +221,14 @@ function sendMessage() {
     addUserMessage(message);
     $("#chat-input").val("");
 
-    addBotMessage("⏳ Typing...");
+    $("#chatMessages").append(`
+        <div class="bot-msg-wrap typing">
+            <div class="bot-msg theme-border">
+                ⏳ Typing...
+            </div>
+        </div>
+    `);
+    scrollChat();
 
     $.ajax({
         url: "/chat",
@@ -229,11 +236,11 @@ function sendMessage() {
         contentType: "application/json",
         data: JSON.stringify({ conversation: conversation }), // send full conversation
         success: function (res) {
-            $("#chatMessages .bot-msg-wrap:last").remove();
+            $(".typing").remove();
             addBotMessage(res.msg);
         },
         error: function () {
-            $("#chatMessages .bot-msg-wrap:last").remove();
+            $(".typing").remove();
             addBotMessage("⚠️ Server error. Try again.");
         }
     });
